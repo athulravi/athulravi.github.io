@@ -1,0 +1,272 @@
+/* Base: reset, type, layout, nav, footer. No decoration in Stage 1. */
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: var(--rule);
+}
+
+/* Home: anchors and keyboard focus always land below the dock strip */
+html.dock-ready {
+  scroll-padding-top: calc(var(--dock-h) + var(--rule));
+}
+
+body,
+h1, h2, h3, h4,
+p, ul, ol, figure {
+  margin: 0;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- Page background ---------- */
+/* html = grid-paper desk; body = lined notebook sheet sitting on it. */
+html {
+  min-height: 100%;
+  background-color: var(--desk);
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+}
+
+/* ---------- Body (the paper sheet) ---------- */
+body {
+  width: min(var(--sheet-max), 100% - 2 * var(--frame));
+  margin: var(--frame) auto;
+  min-height: calc(100vh - 2 * var(--frame));
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 8px 24px rgba(15, 23, 42, 0.10);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Lined area: only <main>, starting under the nav ---------- */
+/* Rule: everything inside <main> uses heights/margins in multiples of --rule,
+   and no borders (use outline or box-shadow) so text stays on the lines. */
+main {
+  flex: 1;
+  /* left margin line + horizontal notebook lines (tokens in css/tokens.css) */
+  background-image: var(--paper-margin), var(--paper-lines);
+  background-position: 0 0, 0 var(--rule-offset);
+}
+
+/* ---------- Type on the rhythm ---------- */
+h1, h2, h3 {
+  font-weight: 600;
+  line-height: var(--rule);
+  margin-bottom: var(--rule);
+}
+
+h1 { font-size: 1.75rem; }
+h2 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+}
+h3 { font-size: var(--fs-md); }
+
+@media (min-width: 48rem) {
+  h1 {
+    font-size: var(--fs-xl);
+    line-height: calc(2 * var(--rule));
+  }
+}
+
+p + p {
+  margin-top: var(--rule);
+}
+
+a {
+  color: var(--blue);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--navy);
+}
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---------- Visually hidden (read by screen readers, not shown) ---------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Layout ---------- */
+.container {
+  width: 100%;
+  padding-inline: var(--gutter);
+}
+
+@media (min-width: 48rem) {
+  .container {
+    padding-left: calc(var(--margin-x) + 1rem); /* text clears the margin line */
+    padding-right: calc(2 * var(--gutter));
+  }
+}
+
+.section {
+  padding-block: calc(2 * var(--rule));
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  background: var(--navy);
+  color: var(--on-dark);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.btn:hover {
+  background: var(--blue);
+  color: var(--on-dark);
+}
+
+/* ---------- Header (Case study / Lab only): one back link ---------- */
+/* Home has no header: visitors scroll. */
+.site-header {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  padding-block: var(--space-2);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  padding-block: var(--rule);
+}
+
+.site-footer h2 {
+  font-size: var(--fs-md);
+  margin-bottom: 0;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--rule);
+  overflow-wrap: anywhere; /* long email/URL text wraps at 360px instead of overflowing */
+}
+
+.contact-list a {
+  display: inline-block;
+  min-height: var(--tap);
+  line-height: var(--tap);
+}
+
+.footer-facts {
+  font-weight: 600;
+}
+
+.footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.footer-meta p + p {
+  margin-top: 0;
+}
+
+/* ---------- Print: plain white page ---------- */
+@media print {
+  html,
+  body,
+  main {
+    background: #FFFFFF;
+  }
+
+  body {
+    width: auto;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+/* ---------- TODO marker (visible placeholder for missing content) ---------- */
+/* Inline (not inline-block) so its border never changes the line height;
+   line-height: 1 keeps the mono font from pushing the line box past one rule. */
+.todo {
+  display: inline;
+  line-height: 1;
+  padding: 2px var(--space-2);
+  border: 1px dashed var(--navy);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  color: var(--navy);
+  background: #FFFFFF;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Later stages: tilted frames/tags add the .tilt class; it is cancelled here. */
+  .tilt {
+    transform: none !important;
+    rotate: none !important;
+  }
+}

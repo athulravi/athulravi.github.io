@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engagement &amp; Pacing Audit — interactive dashboard</title>
+<style>
+:root{
+  --bg:#f2f6fc; --surface:#ffffff; --ink:#0a1730; --ink2:#46546b; --ink3:#7a879b; --grid:#e8eef7; --line:#d8e3f2;
+  --accent:#1558b0; --accent-bg:#eaf2fd; --focus:#1a5fb4;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100;
+  --good:#1a7f4b; --warn:#a15c00;
+}
+[data-theme="dark"]{
+  --bg:#0b1220; --surface:#121b2d; --ink:#eef3fb; --ink2:#b4c0d4; --ink3:#8895ab; --grid:#223049; --line:#2a3a56;
+  --accent:#79b0f5; --accent-bg:#17284a; --focus:#79b0f5;
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500;
+  --good:#4cc38a; --warn:#e0a040;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+header.top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:26px;line-height:1.2;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink2);margin:0;max-width:760px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-width:120px}
+.kpi b{display:block;font-size:20px;line-height:1.2}
+.kpi span{font-size:12.5px;color:var(--ink2)}
+.themebtn{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 18px}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;cursor:pointer;font-weight:600;color:var(--ink2);margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin:0 0 8px;font-weight:700}
+.objectives{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;border:0;margin:0 0 16px;padding:0}
+.objectives legend{padding:0}
+.obj{position:relative}
+.obj input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0;width:100%;height:100%}
+.obj label{display:block;height:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.obj label small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
+.obj label b{display:block;font-size:14.5px;line-height:1.3}
+.obj input:checked + label{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 0 1px var(--accent)}
+.obj input:focus-visible + label{outline:3px solid var(--focus);outline-offset:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h2{font-size:17px;margin:0 0 2px;line-height:1.3}
+.card .qsub{color:var(--ink2);margin:0 0 10px;font-size:13.5px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:10px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:4px 11px 4px 9px;cursor:pointer;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
+.chip svg{flex:none}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;padding:4px 12px;cursor:pointer;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0b0b0b}
+.lbl{font-size:12.5px;color:var(--ink2);font-weight:600}
+.btn{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.chartwrap{position:relative}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:inherit;fill:var(--ink2);font-size:12px}
+svg .t-ink{fill:var(--ink)}
+svg .axis{stroke:var(--grid)}
+.tip{position:absolute;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,.14);border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.4;z-index:5;max-width:280px;display:none}
+.tip b{display:block;margin-bottom:2px}
+.tip .row{display:flex;gap:8px;align-items:center;justify-content:space-between;white-space:nowrap}
+.tip .row i{display:inline-block;width:14px;height:0;border-top:2.5px solid;margin-right:6px;vertical-align:middle}
+table.data{border-collapse:collapse;width:100%;font-size:13px}
+table.data th,table.data td{border-bottom:1px solid var(--grid);padding:5px 8px;text-align:right}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data th{color:var(--ink2);font-weight:600;position:sticky;top:0;background:var(--surface)}
+.tablewrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.note{font-size:12.5px;color:var(--ink2);margin:8px 0 0}
+.panel{position:sticky;top:12px}
+@media(max-width:960px){.panel{position:static}}
+.panel .sec{padding:10px 0;border-top:1px solid var(--grid)}
+.panel .sec:first-of-type{border-top:0;padding-top:0}
+.panel .tag{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--ink2);margin:0 0 3px}
+.panel p{margin:0}
+.panel .dyn{background:var(--accent-bg);border-radius:8px;padding:8px 10px;font-size:13.5px;margin-bottom:10px}
+.panel .metric{font-weight:600}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);margin-right:4px}
+.pill.hi{border-color:var(--good);color:var(--good)}
+.pill.md{border-color:var(--warn);color:var(--warn)}
+.pill.lo{color:var(--ink2)}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.rec{display:flex;flex-direction:column;gap:6px}
+.rec .num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px;flex:none}
+[data-theme="dark"] .rec .num{color:#0b0b0b}
+.rec h3{margin:0;font-size:16px;line-height:1.3}
+.rec .head{display:flex;gap:10px;align-items:flex-start}
+.rec dl{margin:4px 0 0}
+.rec dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--ink2);margin-top:8px}
+.rec dd{margin:0}
+.matrix{display:grid;grid-template-columns:70px 1fr 1fr;grid-template-rows:auto 150px 150px 28px;gap:6px;max-width:560px;margin:0 0 18px}
+.matrix .cell{border:1px dashed var(--line);border-radius:10px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;background:var(--surface)}
+.matrix .ax{font-size:12px;color:var(--ink2);display:flex;align-items:center;justify-content:center;text-align:center}
+.matrix .cell b{width:100%;font-size:12px;color:var(--ink2);font-weight:600}
+.matrix button{width:30px;height:30px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+[data-theme="dark"] .matrix button{color:#0b0b0b}
+.about h3{margin:18px 0 4px;font-size:16px}
+.about ul{margin:4px 0 0;padding-left:20px}
+.about li{margin:3px 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+footer{margin-top:28px;color:var(--ink2);font-size:12.5px}
+
+.hero{background:linear-gradient(135deg,#0a2a5c 0%,#14509f 55%,#2a78d6 100%);color:#fff;border-radius:20px;padding:28px 30px 22px;margin-bottom:6px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.07)}
+.hero::before{content:"";position:absolute;right:120px;bottom:-140px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.05)}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.8;margin:0 0 8px}
+.hero h1{color:#fff;font-size:32px;margin:0 0 6px}
+.hero .sub{color:rgba(255,255,255,.88);max-width:720px}
+.hero .kpis{margin:20px 0 0;position:relative;z-index:1}
+.hero .kpi{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);color:#fff;backdrop-filter:blur(2px)}
+.hero .kpi span{color:rgba(255,255,255,.85)}
+.hero .themebtn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;position:relative;z-index:1}
+.card{box-shadow:0 1px 2px rgba(15,40,90,.05),0 6px 20px rgba(15,40,90,.05)}
+nav.tabs{border-bottom:0;gap:6px;margin:20px 0 18px}
+nav.tabs button{border:1.5px solid transparent;border-radius:999px;margin-bottom:0;padding:8px 18px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+[data-theme="dark"] nav.tabs button[aria-selected="true"]{color:#0b1220}
+nav.tabs button:not([aria-selected="true"]):hover{background:var(--accent-bg)}
+.obj label{transition:box-shadow .15s,border-color .15s;box-shadow:0 1px 2px rgba(15,40,90,.04)}
+.obj label:hover{border-color:var(--accent)}
+.obj .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;margin-bottom:6px}
+.obj input:checked + label .n{background:var(--accent);color:#fff}
+[data-theme="dark"] .obj input:checked + label .n{color:#0b1220}
+.card h2{color:var(--ink)}
+.panel{border-top:4px solid var(--accent)}
+.rec{border-top:4px solid var(--accent)}
+.tablewrap{border-color:var(--line)}
+footer{text-align:center}
+@media(max-width:600px){.hero{padding:20px 18px}.hero h1{font-size:25px}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<!-- Back to home (portfolio) -->
+<a href="../../index.html" style="display:inline-block;align-self:flex-start;margin:12px 16px;padding:10px 14px;font:600 16px/1.2 system-ui,sans-serif;color:#1E3A8A;background:#FAFAF7;border:1px solid #DCE3EC;border-radius:4px;text-decoration:none">&larr; Back to home</a>
+<div class="wrap">
+<header class="hero">
+  <div style="display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;position:relative;z-index:1">
+    <div>
+      <p class="eyebrow">Learning analytics case study · xAPI</p>
+      <h1>Engagement &amp; Pacing Audit</h1>
+      <p class="sub">How learners actually behaved across 8 university courses, built from real xAPI activity logs. Pick a question, filter the courses, and read each finding next to the decision it would support.</p>
+    </div>
+    <button class="themebtn" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+  </div>
+  <div class="kpis" aria-label="Dataset summary">
+    <div class="kpi"><b>306,741</b><span>xAPI statements</span></div>
+    <div class="kpi"><b>829</b><span>learners</span></div>
+    <div class="kpi"><b>8</b><span>courses · 4 universities</span></div>
+    <div class="kpi"><b>5</b><span>decisions proposed</span></div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Dashboard sections">
+  <button role="tab" id="tab-explore" aria-selected="true" aria-controls="p-explore" data-tab="explore">Explore the data</button>
+  <button role="tab" id="tab-decision-board" aria-selected="false" aria-controls="p-decisions" data-tab="decision-board" tabindex="-1">Decision board</button>
+  <button role="tab" id="tab-about" aria-selected="false" aria-controls="p-about" data-tab="about" tabindex="-1">About the data</button>
+</nav>
+
+<section id="p-explore" role="tabpanel" aria-labelledby="tab-explore">
+  <fieldset class="objectives" id="objectives">
+    <legend class="h2">What do you want to find out?</legend>
+  </fieldset>
+  <div class="layout">
+    <div class="card" id="main">
+      <h2 id="qTitle"></h2>
+      <p class="qsub" id="qSub"></p>
+      <div class="controls" id="controls"></div>
+      <div class="chartwrap" id="chartwrap">
+        <div id="chartArea"></div>
+        <div class="tip" id="tip" role="presentation"></div>
+      </div>
+      <div class="tablewrap" id="tableArea" hidden></div>
+      <p class="note" id="viewNote"></p>
+      <div class="sr" id="live" aria-live="polite"></div>
+    </div>
+    <aside class="card panel" id="panel" aria-label="What this means"></aside>
+  </div>
+</section>
+
+<section id="p-decisions" role="tabpanel" aria-labelledby="tab-decision-board" hidden>
+  <p class="sub" style="margin-bottom:12px">Five decisions the data supports, each with the metric that would show whether it worked. Sort them, or open the evidence behind any one.</p>
+  <div class="controls"><span class="lbl">Sort by</span>
+    <div class="seg" id="sortSeg" role="group" aria-label="Sort recommendations">
+      <button type="button" data-sort="priority" aria-pressed="true">Proposed priority</button>
+      <button type="button" data-sort="effort" aria-pressed="false">Lowest effort first</button>
+      <button type="button" data-sort="impact" aria-pressed="false">Highest impact first</button>
+    </div>
+  </div>
+  <div id="matrixArea"></div>
+  <div class="board" id="board"></div>
+</section>
+
+<section id="p-about" role="tabpanel" aria-labelledby="tab-about" hidden>
+  <div class="card about">
+    <h2>About the data and the method</h2>
+    <h3>Source</h3>
+    <p>ILEDA dataset: anonymised xAPI statements from Moodle and LAMS learning environments at four universities (Zenodo, DOI <a href="https://doi.org/10.5281/zenodo.10114515">10.5281/zenodo.10114515</a>), licensed CC BY-SA 4.0. All credit for data collection and publication goes to the dataset's authors. This dashboard shows only aggregated results (no learner-level records) and is shared under the same CC BY-SA 4.0 licence. Analysis and dashboard: Athul Nath P.</p>
+    <h3>How the numbers are built</h3>
+    <ul>
+      <li><b>Weeks</b> are counted from each learner's own first activity in a course, so courses with different calendars are comparable. "Active" means at least one logged event that week.</li>
+      <li><b>Content coverage</b> is the share of a course's learners with at least one logged event of that content type. Hatched cells mean the LMS logged nothing of that type for the course.</li>
+      <li><b>Deadline proxy:</b> the dataset has no due dates, so each assignment's deadline is approximated by the 90th-percentile submission time. Only assignments with enough submissions are used (40+, or 150+ in Human Factors, which has many small items).</li>
+      <li><b>Study times</b> use each university's local time zone. Timestamps in the BMU courses may be offset, which makes their time-of-day unreliable, so BMU is left out of the pooled view.</li>
+      <li><b>Learner types</b> come from a transparent rule set: Early leaver (active span of 3 weeks or less, or under half the course median); Bursty (half or more of all events in their two busiest weeks); Steady (active in 75% or more of weeks); otherwise On-and-off. Scores are mean scaled scores of scored learners.</li>
+    </ul>
+    <h3>What this cannot tell you</h3>
+    <ul>
+      <li>Viewing is not learning: activity shows behaviour, not understanding.</li>
+      <li>No due dates and no final grades are in the data, so deadlines are a proxy and outcomes are limited to logged scores.</li>
+      <li>Logging differs by course (for example BMU only logs quizzes and assessments), so cross-course comparisons of content use are partly comparisons of instrumentation.</li>
+      <li>Scores in the UL Web applications course are unreliable, so its scores are not shown, and only 12 SU Human Computer Interaction learners have a score.</li>
+      <li>Links between learner type and score are associations. Only 15 learners are Early leavers with a score.</li>
+    </ul>
+  </div>
+</section>
+<footer>Data: ILEDA (Zenodo, CC BY-SA 4.0). Every figure on this page is computed from that dataset and aggregated before publishing.</footer>
+</div>
+<script>
+const DATA = {"courses":[{"id":"BMU | Computer networks","inst":"BMU","name":"Computer networks","learners":41,"events":5769,"retention":[100.0,63.4,80.5,68.3,56.1,65.9,39.0,17.1,51.2,46.3,51.2,58.5,60.0,61.5,57.9,68.6],"coverage":[0.0,0.0,0.0,100.0,100.0,0.0],"timing":null,"heat":[[4.33,1.39,0.88,0.1,0.14,0.03,0.07,0.0,0.0,0.1,0.07,0.14,0.17,0.38,0.42,0.14,1.35,0.73,0.42,1.02,1.59,0.49,0.54,1.02],[0.75,2.03,0.73,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.88,0.07,0.24,1.04,0.1,0.69,0.71,0.5,0.36,0.42,0.75,0.36,0.14],[1.07,1.14,0.64,0.71,0.0,0.0,0.0,0.0,0.0,0.0,0.47,0.83,0.52,0.36,0.43,1.11,0.4,0.17,1.16,0.5,0.83,1.7,1.65,0.0],[2.36,0.9,0.03,0.33,0.0,0.0,0.0,0.0,0.0,0.0,0.21,0.0,0.78,0.5,0.4,0.1,0.29,0.0,0.83,0.94,0.07,0.29,0.54,5.11],[1.94,1.2,0.47,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.61,0.03,0.03,0.0,0.4,0.33,0.03,5.79,19.74,1.13,0.29,0.07,0.87],[0.49,0.07,0.33,0.03,0.1,0.03,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.61,0.07,0.54,0.21,0.54,0.5,0.5,0.03,0.03,0.1],[0.07,0.03,0.0,0.0,0.66,0.0,0.0,0.07,0.0,0.0,0.0,0.07,0.03,0.21,0.17,0.36,0.28,0.94,1.72,0.64,1.35,0.28,0.35,2.1]],"weekend":13.5,"after18":57.3,"night":36.7,"segments":[{"name":"Steady","n":8,"share":19.5,"mean":0.76,"nscore":8},{"name":"Bursty","n":25,"share":61.0,"mean":0.63,"nscore":25},{"name":"On-and-off","n":6,"share":14.6,"mean":0.66,"nscore":6},{"name":"Early leaver","n":2,"share":4.9,"mean":0.72,"nscore":2}]},{"id":"BMU | Computer organization","inst":"BMU","name":"Computer organization","learners":79,"events":8829,"retention":[100.0,62.0,42.9,26.3,31.6,18.7,25.3,43.1,29.2,34.7,66.7,70.8,71.8,42.4,48.0],"coverage":[0.0,0.0,0.0,97.0,99.0,0.0],"timing":null,"heat":[[1.4,2.96,0.33,0.09,0.0,0.14,0.0,0.0,0.0,0.0,0.02,0.07,0.09,0.91,0.45,0.4,0.78,0.68,0.22,0.18,1.5,0.69,0.75,1.17],[1.38,1.29,0.11,0.35,0.02,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.16,2.27,0.05,0.69,0.69,0.65,0.68,1.54,1.03,2.07,1.19,0.32],[0.96,1.14,1.19,0.02,0.35,0.0,0.0,0.0,0.0,0.0,0.24,0.02,0.09,0.55,0.44,0.53,0.71,0.71,1.28,1.48,0.35,0.51,0.87,0.4],[0.29,1.0,0.62,0.02,0.05,0.0,0.0,0.27,0.0,0.52,0.57,0.59,0.25,2.56,0.63,0.77,0.5,0.48,0.61,1.18,1.02,0.26,2.17,2.31],[1.2,2.05,0.42,0.26,0.07,0.07,0.18,0.0,0.0,0.07,0.78,0.52,0.36,0.07,0.39,0.54,0.52,0.19,0.28,0.58,0.69,0.83,0.18,1.54],[0.24,1.22,0.09,0.02,0.0,0.0,0.0,0.0,0.0,0.02,0.0,0.28,0.19,0.22,0.69,0.63,0.05,0.28,0.26,0.78,0.85,0.31,0.62,0.35],[0.14,0.33,0.58,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.19,0.02,0.58,12.62,6.34,0.52,0.48,0.4,1.02,0.77,0.24,0.24,0.14,0.67]],"weekend":32.4,"after18":34.1,"night":33.1,"segments":[{"name":"Steady","n":1,"share":1.3,"mean":0.93,"nscore":1},{"name":"Bursty","n":34,"share":43.0,"mean":0.78,"nscore":33},{"name":"On-and-off","n":34,"share":43.0,"mean":0.81,"nscore":34},{"name":"Early leaver","n":10,"share":12.7,"mean":0.7,"nscore":10}]},{"id":"SU | E-Learning","inst":"SU","name":"E-Learning","learners":82,"events":27097,"retention":[100.0,80.5,73.2,73.2,72.0,71.6,76.3,77.6,77.3,80.6,76.1,78.7,77.8,52.6],"coverage":[83.0,61.0,83.0,79.0,70.0,0.0],"timing":null,"heat":[[0.58,0.12,0.01,0.0,0.03,0.0,0.08,0.0,0.21,0.72,0.65,0.7,0.59,0.5,0.7,1.11,1.07,1.51,1.65,0.62,1.25,1.8,1.66,1.34],[0.87,0.47,0.27,0.13,0.15,0.04,0.14,0.12,0.46,1.27,0.8,1.82,1.66,2.01,2.44,2.48,3.45,5.06,5.81,3.8,1.81,0.96,2.11,1.88],[0.97,0.26,0.09,0.02,0.0,0.0,0.04,0.31,0.75,1.02,2.71,2.6,0.85,0.87,0.69,1.11,0.65,0.93,0.89,0.75,0.9,0.4,0.44,0.42],[0.08,0.0,0.01,0.01,0.0,0.0,0.0,0.03,0.14,0.22,0.37,0.27,0.48,0.15,0.32,0.39,0.5,0.39,0.41,0.24,0.31,0.11,0.4,0.19],[0.09,0.07,0.04,0.01,0.0,0.0,0.03,0.0,0.08,0.27,0.24,0.12,0.3,0.42,0.38,0.25,0.89,0.2,0.18,0.28,0.12,0.16,0.29,0.33],[0.19,0.1,0.02,0.01,0.03,0.0,0.0,0.06,0.03,0.06,0.21,0.3,0.54,0.6,0.33,0.51,0.23,0.37,0.13,0.35,0.2,0.09,0.26,0.29],[0.28,0.08,0.02,0.01,0.01,0.0,0.0,0.0,0.04,0.11,0.56,0.28,0.37,0.41,0.58,0.7,0.25,0.88,0.7,1.32,1.12,1.11,0.73,1.14]],"weekend":15.6,"after18":39.0,"night":16.6,"segments":[{"name":"Steady","n":47,"share":57.3,"mean":0.96,"nscore":45},{"name":"Bursty","n":23,"share":28.0,"mean":0.9,"nscore":9},{"name":"On-and-off","n":0,"share":0.0,"mean":null,"nscore":0},{"name":"Early leaver","n":12,"share":14.6,"mean":null,"nscore":0}]},{"id":"SU | Human Computer Interaction","inst":"SU","name":"Human Computer Interaction","learners":120,"events":15862,"retention":[100.0,58.3,76.7,68.3,79.2,83.2,79.8,60.2,61.5,65.0,64.7,83.3,76.0,59.6,82.4,91.7,73.7],"coverage":[93.0,85.0,51.0,1.0,93.0,0.0],"timing":null,"heat":[[0.28,0.08,0.13,0.08,0.0,0.0,0.04,0.18,0.55,1.04,1.22,3.01,2.06,2.68,1.52,1.36,1.19,1.16,1.05,0.76,1.51,1.37,1.54,0.61],[0.26,0.14,0.05,0.03,0.05,0.01,0.08,0.23,0.29,0.63,1.05,3.08,1.02,0.81,0.9,0.72,0.57,1.22,1.12,0.55,1.07,1.24,0.6,0.55],[0.2,0.18,0.12,0.03,0.03,0.0,0.05,0.11,0.35,0.66,0.55,0.74,0.45,0.43,0.47,0.55,0.38,0.6,0.65,0.74,0.73,0.67,0.6,0.47],[0.18,0.26,0.06,0.02,0.06,0.01,0.04,0.18,0.27,0.53,0.46,0.52,0.42,0.49,0.42,0.55,0.48,0.92,0.45,0.41,0.49,0.44,0.55,0.33],[0.16,0.1,0.06,0.0,0.03,0.0,0.09,0.19,0.28,0.67,0.96,2.18,1.28,1.5,0.62,1.39,0.94,0.71,0.54,0.6,0.46,0.51,0.56,0.21],[0.25,0.13,0.01,0.01,0.0,0.11,0.04,0.06,0.15,0.5,0.63,0.66,0.59,0.38,1.41,0.89,0.72,1.21,0.86,0.61,0.72,0.55,0.85,0.51],[0.37,0.11,0.1,0.04,0.01,0.0,0.01,0.01,0.18,0.24,0.94,0.76,1.22,1.47,1.24,1.18,0.96,0.73,1.26,1.19,1.06,0.89,0.98,1.23]],"weekend":28.0,"after18":32.1,"night":13.3,"segments":[{"name":"Steady","n":59,"share":49.2,"mean":0.86,"nscore":10},{"name":"Bursty","n":45,"share":37.5,"mean":null,"nscore":0},{"name":"On-and-off","n":11,"share":9.2,"mean":0.83,"nscore":2},{"name":"Early leaver","n":5,"share":4.2,"mean":null,"nscore":0}]},{"id":"UEF | Advanced Data Management Systems","inst":"UEF","name":"Advanced Data Management Systems","learners":82,"events":18463,"retention":[100.0,78.8,68.8,71.2,76.2,67.5,68.8,73.4,62.0,64.6,57.0,35.4,70.9,54.4,5.3,7.1,4.8],"coverage":[74.0,89.0,37.0,80.0,89.0,79.0],"timing":{"n":387,"bins":[4.1,3.4,2.3,0.8,6.7,2.6,2.1,2.8,2.6,2.1,1.3,2.1,1.3,3.9,62.0],"last24":4.1,"last48":7.5,"last7":22.0,"plus14":62.0,"assignments":8},"heat":[[0.23,0.43,0.15,0.81,0.18,0.02,0.05,0.06,0.42,0.47,1.27,0.67,1.28,1.13,2.32,1.61,1.23,0.88,0.66,1.09,1.08,1.17,1.25,0.78],[0.21,0.14,0.29,0.3,0.23,0.04,0.14,0.11,0.35,1.25,1.34,1.4,2.2,2.99,4.21,1.18,1.51,0.91,1.06,1.18,0.97,0.73,0.83,0.66],[0.45,0.23,0.23,0.14,0.1,0.05,0.02,0.11,1.2,0.84,0.62,0.66,1.12,0.74,0.86,0.77,0.9,1.27,0.81,1.02,0.64,0.8,0.82,1.2],[0.35,0.04,0.15,0.01,0.01,0.02,0.02,0.04,0.37,0.82,0.74,1.08,0.83,1.33,1.08,1.01,0.63,0.89,0.65,0.49,0.76,0.61,1.34,0.64],[0.25,0.04,0.02,0.1,0.03,0.01,0.02,0.01,0.58,0.37,0.47,0.66,0.63,0.6,0.46,0.34,0.79,0.38,0.31,0.34,0.36,0.66,0.71,0.28],[0.61,0.08,0.04,0.0,0.0,0.07,0.13,0.04,0.15,0.31,0.23,0.22,0.88,0.42,0.58,0.51,0.77,0.39,0.61,0.55,0.47,0.25,0.18,0.53],[0.1,0.19,0.05,0.01,0.04,0.02,0.0,0.0,0.14,0.15,0.25,0.47,0.61,0.92,0.87,0.81,0.94,0.93,0.67,1.15,0.89,0.27,0.35,0.74]],"weekend":18.6,"after18":30.6,"night":16.8,"segments":[{"name":"Steady","n":38,"share":46.3,"mean":0.96,"nscore":37},{"name":"Bursty","n":22,"share":26.8,"mean":0.91,"nscore":17},{"name":"On-and-off","n":3,"share":3.7,"mean":0.96,"nscore":3},{"name":"Early leaver","n":19,"share":23.2,"mean":1.0,"nscore":2}]},{"id":"UEF | Human Factors of Interactive Technology","inst":"UEF","name":"Human Factors of Interactive Technology","learners":259,"events":135109,"retention":[100.0,90.7,79.4,86.8,83.3,91.8,89.5,86.7,84.8,87.5,88.6,81.0,80.2,50.8,6.0],"coverage":[97.0,86.0,95.0,92.0,97.0,92.0],"timing":{"n":883,"bins":[33.9,10.8,8.4,7.2,6.7,5.9,5.5,1.8,3.7,3.7,1.6,2.9,2.2,2.6,3.1],"last24":33.9,"last48":44.6,"last7":78.4,"plus14":3.1,"assignments":5},"heat":[[0.27,0.11,0.04,0.11,0.02,0.01,0.05,0.13,0.31,0.9,1.34,1.4,1.36,1.63,1.69,1.24,1.21,1.4,0.69,0.83,0.51,0.64,0.33,0.25],[0.11,0.15,0.03,0.08,0.03,0.02,0.03,0.14,0.29,0.56,0.82,0.94,0.97,1.03,1.03,1.07,1.44,1.51,1.18,1.09,0.8,0.73,0.56,0.39],[0.22,0.11,0.08,0.04,0.01,0.02,0.03,0.11,0.26,0.57,0.71,0.91,0.95,1.21,1.02,1.4,1.28,1.1,0.85,1.11,1.11,0.74,0.76,0.51],[0.16,0.06,0.02,0.03,0.04,0.01,0.09,0.06,0.29,0.54,0.68,0.63,0.77,0.66,0.87,0.75,0.88,0.68,0.55,0.96,0.7,0.5,0.44,0.29],[0.09,0.11,0.04,0.03,0.06,0.0,0.02,0.12,0.31,0.51,0.68,0.97,0.84,1.27,1.09,0.8,0.58,0.86,0.99,0.74,0.78,0.31,0.45,0.25],[0.18,0.03,0.13,0.05,0.04,0.08,0.03,0.03,0.09,0.38,0.61,0.68,0.79,0.64,0.5,0.58,0.56,0.87,0.63,0.67,0.65,0.44,0.37,0.4],[0.36,0.23,0.06,0.07,0.03,0.04,0.04,0.03,0.2,0.34,0.73,0.92,0.82,1.37,1.34,1.37,1.48,1.7,1.66,2.07,2.11,1.52,1.58,1.38]],"weekend":30.9,"after18":33.5,"night":11.4,"segments":[{"name":"Steady","n":187,"share":72.2,"mean":0.96,"nscore":186},{"name":"Bursty","n":62,"share":23.9,"mean":0.88,"nscore":50},{"name":"On-and-off","n":0,"share":0.0,"mean":null,"nscore":0},{"name":"Early leaver","n":10,"share":3.9,"mean":0.89,"nscore":1}]},{"id":"UL | Computer Architecture","inst":"UL","name":"Computer Architecture","learners":99,"events":74867,"retention":[100.0,66.3,63.3,64.3,64.3,69.4,69.4,58.2,68.4,69.4,66.3,72.4,76.5,75.5,76.5,76.5,70.4,46.9,38.8,27.6,15.3],"coverage":[98.0,97.0,49.0,97.0,93.0,0.0],"timing":null,"heat":[[0.25,0.07,0.06,0.0,0.02,0.01,0.01,0.02,0.06,0.31,0.39,0.77,0.6,0.46,0.29,0.34,0.71,0.8,0.91,0.83,0.56,0.43,0.53,0.45],[0.25,0.1,0.05,0.02,0.01,0.03,0.02,0.02,0.19,3.28,2.1,1.58,1.11,0.65,0.82,6.86,3.54,6.66,2.39,0.79,0.48,0.25,0.3,0.35],[0.32,0.14,0.07,0.07,0.05,0.01,0.01,0.03,0.25,1.14,1.65,1.2,1.29,1.3,0.75,0.94,1.31,1.7,1.47,1.54,0.86,0.31,0.4,0.31],[0.23,0.11,0.12,0.03,0.01,0.0,0.02,0.02,0.24,0.66,0.8,0.8,1.33,1.14,1.08,1.18,4.74,1.72,6.3,2.39,1.03,0.44,0.61,0.33],[0.23,0.03,0.02,0.11,0.07,0.0,0.01,0.05,0.21,0.73,0.53,1.08,1.64,1.2,0.22,0.17,0.38,0.65,0.81,0.41,0.13,0.13,0.11,0.13],[0.08,0.04,0.02,0.01,0.0,0.0,0.0,0.0,0.0,0.05,0.18,0.24,0.32,0.32,0.12,0.28,0.25,0.27,0.43,0.4,0.24,0.19,0.14,0.11],[0.12,0.08,0.02,0.0,0.0,0.0,0.0,0.01,0.0,0.04,0.17,0.19,0.27,0.25,0.17,0.17,0.44,0.33,0.23,0.37,0.47,0.13,0.32,0.33]],"weekend":7.8,"after18":29.4,"night":7.3,"segments":[{"name":"Steady","n":61,"share":61.6,"mean":0.79,"nscore":58},{"name":"Bursty","n":11,"share":11.1,"mean":0.84,"nscore":4},{"name":"On-and-off","n":25,"share":25.3,"mean":0.79,"nscore":23},{"name":"Early leaver","n":2,"share":2.0,"mean":null,"nscore":0}]},{"id":"UL | Web applications","inst":"UL","name":"Web applications","learners":67,"events":20745,"retention":[100.0,50.0,45.3,50.0,50.0,50.0,46.9,48.4,53.1,51.6,51.6,48.4,53.1,45.3,48.4,59.4,60.9,57.8,50.0,31.2,29.7],"coverage":[96.0,96.0,49.0,0.0,94.0,0.0],"timing":null,"heat":[[0.94,0.28,0.09,0.09,0.02,0.02,0.03,0.14,0.56,5.6,2.23,3.68,0.98,1.45,0.76,0.83,1.12,1.11,0.77,0.87,1.11,0.71,0.54,0.76],[0.56,0.31,0.09,0.05,0.02,0.02,0.18,0.13,0.59,4.63,1.08,2.84,1.49,1.17,0.9,2.16,0.81,0.95,0.84,0.76,0.7,0.74,0.57,0.63],[0.18,0.1,0.11,0.04,0.0,0.0,0.0,0.02,0.06,0.27,0.57,0.74,0.57,1.03,0.83,0.66,0.65,0.8,0.59,0.41,0.65,0.41,0.23,0.34],[0.23,0.07,0.09,0.1,0.0,0.01,0.0,0.01,0.05,1.26,0.73,0.8,1.2,1.25,0.6,0.44,0.87,1.05,0.89,0.63,0.6,0.44,0.4,0.31],[0.18,0.35,0.14,0.12,0.01,0.06,0.04,0.2,0.23,2.84,0.56,1.04,0.78,0.82,0.38,0.43,0.44,0.71,0.57,0.37,0.23,0.23,0.13,0.28],[0.09,0.11,0.05,0.05,0.01,0.01,0.0,0.02,0.0,0.09,0.36,0.61,0.7,0.28,0.19,0.38,0.56,0.65,0.44,0.57,0.33,0.26,0.27,0.37],[0.18,0.09,0.21,0.09,0.01,0.0,0.0,0.01,0.07,0.1,0.29,0.6,0.63,0.7,0.43,0.47,0.88,1.52,0.78,1.05,1.26,1.48,1.39,1.95]],"weekend":20.6,"after18":26.9,"night":13.4,"segments":[{"name":"Steady","n":11,"share":16.4,"mean":null,"nscore":0},{"name":"Bursty","n":1,"share":1.5,"mean":null,"nscore":0},{"name":"On-and-off","n":51,"share":76.1,"mean":null,"nscore":0},{"name":"Early leaver","n":4,"share":6.0,"mean":null,"nscore":0}]}],"content_types":["Resources","Links","Discussion","Quizzes","Assessments","Peer review"],"all":{"learners":709,"learners_all":829,"events":292143,"heat":[[0.34,0.13,0.06,0.11,0.03,0.01,0.04,0.09,0.28,1.05,1.08,1.38,1.1,1.24,1.2,1.0,1.06,1.19,0.86,0.83,0.72,0.77,0.64,0.49],[0.26,0.17,0.08,0.08,0.05,0.03,0.06,0.11,0.31,1.66,1.21,1.47,1.19,1.14,1.29,2.75,2.08,3.07,1.89,1.22,0.83,0.65,0.66,0.56],[0.33,0.14,0.09,0.05,0.02,0.02,0.02,0.1,0.35,0.76,1.11,1.11,0.98,1.12,0.87,1.12,1.11,1.2,0.98,1.11,0.94,0.57,0.59,0.48],[0.19,0.08,0.06,0.03,0.03,0.01,0.05,0.05,0.25,0.61,0.68,0.67,0.9,0.81,0.84,0.81,1.79,0.97,2.04,1.18,0.73,0.45,0.54,0.31],[0.14,0.1,0.04,0.06,0.05,0.01,0.02,0.09,0.27,0.71,0.59,0.97,1.0,1.11,0.68,0.57,0.58,0.69,0.77,0.56,0.47,0.28,0.35,0.23],[0.18,0.05,0.08,0.03,0.02,0.05,0.02,0.03,0.06,0.25,0.43,0.5,0.63,0.5,0.42,0.49,0.47,0.64,0.53,0.55,0.48,0.32,0.31,0.33],[0.26,0.16,0.06,0.04,0.02,0.02,0.02,0.02,0.12,0.21,0.52,0.61,0.63,0.93,0.87,0.89,1.0,1.16,1.06,1.39,1.4,1.01,1.06,1.08]],"weekend":21.9,"after18":32.2,"segments":[{"name":"Steady","n":412,"share":49.7,"mean":0.92,"nscore":345},{"name":"Bursty","n":223,"share":26.9,"mean":0.81,"nscore":138},{"name":"On-and-off","n":130,"share":15.7,"mean":0.8,"nscore":68},{"name":"Early leaver","n":64,"share":7.7,"mean":0.75,"nscore":15}]}};
+</script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const C=DATA.courses; const byId={}; C.forEach(c=>byId[c.id]=c);
+const SHORT={"BMU | Computer networks":"BMU · Networks","BMU | Computer organization":"BMU · Comp. org.","SU | E-Learning":"SU · E-Learning","SU | Human Computer Interaction":"SU · HCI","UEF | Advanced Data Management Systems":"UEF · Adv. data mgmt","UEF | Human Factors of Interactive Technology":"UEF · Human factors","UL | Computer Architecture":"UL · Comp. arch.","UL | Web applications":"UL · Web apps"};
+const INST={BMU:"var(--c1)",SU:"var(--c2)",UEF:"var(--c3)",UL:"var(--c4)"};
+const DASH={}; (function(){const seen={};C.forEach(c=>{seen[c.inst]=(seen[c.inst]||0)+1;DASH[c.id]=seen[c.inst]===1?"":"6 4";});})();
+const SEGCOL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+const DOW=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const TYPES=DATA.content_types;
+
+const state={view:"retention",mode:"chart",unit:"pct",
+  sel:{retention:new Set(["BMU | Computer organization","SU | E-Learning","UEF | Human Factors of Interactive Technology","UL | Computer Architecture"]),
+       coverage:new Set(C.map(c=>c.id)),timing:new Set(["UEF | Human Factors of Interactive Technology","UEF | Advanced Data Management Systems"]),
+       hours:"ALL",segments:"ALL"}};
+
+const VIEWS=[
+ {id:"retention",q:"Do learners stay engaged week to week?",s:"Share of learners active in each week since their own start"},
+ {id:"timing",q:"Do deadlines shape when work gets done?",s:"When assignments are submitted relative to the deadline"},
+ {id:"coverage",q:"Which content do learners actually use?",s:"Share of learners touching each content type"},
+ {id:"hours",q:"When do learners study?",s:"Activity by weekday and hour, local time"},
+ {id:"segments",q:"Who are the learners, and how do they differ?",s:"Pacing patterns and the scores that go with them"}
+];
+
+/* ---------- helpers ---------- */
+function el(n,a,txt){const e=document.createElementNS(NS,n);for(const k in a||{})e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e;}
+function h(tag,attrs,html){const e=document.createElement(tag);for(const k in attrs||{})e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function fmt(v,d){if(v==null||isNaN(v))return "—";return (Math.abs(v)<10&&v!==0&&d!==0)?v.toFixed(1):Math.round(v).toString();}
+function dark(){return document.documentElement.getAttribute("data-theme")==="dark";}
+const RAMP_L=["#cde2fb","#94bff0","#5b9be3","#2a78d6","#1a5aa8","#0d366b"];
+const RAMP_D=["#1f2b3a","#254a76","#2d6bb3","#3987e5","#6aa8f0","#a9ceff"];
+function hex(c){return [1,3,5].map(i=>parseInt(c.substr(i,2),16));}
+function ramp(t){const R=dark()?RAMP_D:RAMP_L;t=Math.max(0,Math.min(1,t));const x=t*(R.length-1),i=Math.min(R.length-2,Math.floor(x)),f=x-i;const a=hex(R[i]),b=hex(R[i+1]);return "rgb("+a.map((v,k)=>Math.round(v+(b[k]-v)*f)).join(",")+")";}
+function textOn(t){return dark()?(t>0.55?"#0b0b0b":"#f0efec"):(t>0.5?"#ffffff":"#0b0b0b");}
+function hatchDefs(svg){const d=el("defs");const p=el("pattern",{id:"hatch",width:6,height:6,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"});p.appendChild(el("rect",{width:6,height:6,fill:"var(--surface)"}));p.appendChild(el("line",{x1:0,y1:0,x2:0,y2:6,stroke:"var(--ink3)","stroke-width":1.4}));d.appendChild(p);svg.appendChild(d);}
+const tip=$("#tip"),wrap=$("#chartwrap");
+function showTip(html,ev,target){tip.innerHTML=html;tip.style.display="block";const r=wrap.getBoundingClientRect();let x,y;
+  if(ev&&ev.clientX!=null&&!(ev.type&&ev.type.indexOf("focus")===0)){x=ev.clientX-r.left;y=ev.clientY-r.top;}
+  else if(target){const t=target.getBoundingClientRect();x=t.left-r.left+t.width/2;y=t.top-r.top;}
+  else{x=20;y=20;}
+  const w=tip.offsetWidth,hh=tip.offsetHeight;let left=x+14;if(left+w>r.width)left=x-w-14;if(left<0)left=4;let top=y-hh-10;if(top<0)top=y+18;tip.style.left=left+"px";tip.style.top=top+"px";}
+function hideTip(){tip.style.display="none";}
+function tipRows(title,rows){return "<b>"+esc(title)+"</b>"+rows.map(r=>'<div class="row"><span>'+(r.sw?'<i style="border-top-color:'+r.sw+(r.dash?";border-top-style:dashed":"")+'"></i>':"")+esc(r.k)+"</span><span><b style='display:inline'>"+esc(r.v)+"</b></span></div>").join("");}
+function live(t){$("#live").textContent=t;}
+function chipSwatch(c){const s=el("svg",{width:26,height:10,"aria-hidden":"true"});s.appendChild(el("line",{x1:1,y1:5,x2:25,y2:5,stroke:INST[c.inst],"stroke-width":3,"stroke-dasharray":DASH[c.id],"stroke-linecap":"round"}));return s;}
+
+/* ---------- controls ---------- */
+function chips(opts){ // opts:{multi,items:[{id,label,course,disabled,title}],get,set,min}
+  const box=h("div",{class:"chips",role:"group","aria-label":opts.label});
+  opts.items.forEach(it=>{
+    const b=h("button",{type:"button",class:"chip"});
+    if(it.course)b.appendChild(chipSwatch(it.course));
+    b.appendChild(document.createTextNode(it.label));
+    const on=opts.multi?opts.get().has(it.id):opts.get()===it.id;
+    b.setAttribute("aria-pressed",on?"true":"false");
+    if(it.disabled){b.disabled=true;b.title=it.title||"";}
+    b.addEventListener("click",()=>{opts.click(it.id);});
+    box.appendChild(b);
+  });return box;
+}
+function courseItems(filter){return C.map(c=>({id:c.id,label:SHORT[c.id],course:c,disabled:filter?!filter(c):false,title:filter&&!filter(c)?"No data of this kind for this course":""}));}
+function toggleMulti(set,id,min,max){if(set.has(id)){if(set.size>min)set.delete(id);}else{if(!max||set.size<max)set.add(id);else{live("Up to "+max+" courses can be compared at once. Deselect one first.");}}}
+function seg(labels,get,set,aria){const d=h("div",{class:"seg",role:"group","aria-label":aria});labels.forEach(([v,t])=>{const b=h("button",{type:"button"},esc(t));b.setAttribute("aria-pressed",get()===v?"true":"false");b.addEventListener("click",()=>set(v));d.appendChild(b);});return d;}
+function lbl(t){return h("span",{class:"lbl"},esc(t));}
+
+/* ---------- views ---------- */
+const V={};
+
+/* RETENTION */
+V.retention={
+ controls(box){
+  box.appendChild(lbl("Courses (colour = university, dashed = second course)"));
+  box.appendChild(chips({multi:true,label:"Courses to show",items:courseItems(),get:()=>state.sel.retention,click:id=>{toggleMulti(state.sel.retention,id,1);render();}}));
+ },
+ rows(){const sel=C.filter(c=>state.sel.retention.has(c.id));const head=["Week since learner's first activity"].concat(sel.map(c=>SHORT[c.id]+" (% active)"));
+  const rows=[];for(let w=1;w<=20;w++){const r=[w];let any=false;sel.forEach(c=>{const v=c.retention[w];r.push(v==null?"":v);if(v!=null)any=true;});if(any)rows.push(r);}return {head,rows};},
+ draw(area){
+  const sel=C.filter(c=>state.sel.retention.has(c.id));
+  const W=760,H=380,m={l:44,r:140,t:14,b:44};const iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const maxW=Math.max(...sel.map(c=>c.retention.length-1),4);
+  const X=w=>m.l+(w-1)/(maxW-1)*iw,Y=v=>m.t+ih-(v/100)*ih;
+  const svg=el("svg",{class:"chart",viewBox:"0 0 "+W+" "+H,role:"img",tabindex:"0","aria-label":"Line chart: share of learners active by week for "+sel.map(c=>SHORT[c.id]).join(", ")+". Use left and right arrow keys to read each week, or switch to table view."});
+  [0,25,50,75,100].forEach(v=>{svg.appendChild(el("line",{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),class:"axis"}));svg.appendChild(el("text",{x:m.l-8,y:Y(v)+4,"text-anchor":"end"},v+"%"));});
+  for(let w=1;w<=maxW;w+=(maxW>14?2:1)){svg.appendChild(el("text",{x:X(w),y:H-m.b+18,"text-anchor":"middle"},w));}
+  svg.appendChild(el("text",{x:m.l+iw/2,y:H-6,"text-anchor":"middle"},"Weeks since the learner's first activity in the course"));
+  const g=el("g");svg.appendChild(g);
+  const ends=[];
+  sel.forEach(c=>{
+    const pts=[];for(let w=1;w<c.retention.length;w++)pts.push([X(w),Y(c.retention[w])]);
+    g.appendChild(el("path",{d:pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(""),fill:"none",stroke:INST[c.inst],"stroke-width":2.25,"stroke-dasharray":DASH[c.id],"stroke-linejoin":"round","stroke-linecap":"round"}));
+    const last=pts[pts.length-1];ends.push({c,x:last[0],y:last[1]});
+  });
+  // direct labels with collision nudging
+  ends.sort((a,b)=>a.y-b.y);let prev=-99;ends.forEach(e=>{e.ly=Math.max(e.y,prev+14);prev=e.ly;});
+  ends.forEach(e=>{svg.appendChild(el("text",{x:e.x+8,y:e.ly+4,class:"t-ink","font-weight":600,"font-size":12,style:"paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round"},SHORT[e.c.id]));});
+  // hover layer
+  const cross=el("line",{y1:m.t,y2:m.t+ih,stroke:"var(--ink3)","stroke-width":1,"stroke-dasharray":"3 3",visibility:"hidden"});svg.appendChild(cross);
+  const dots=sel.map(c=>{const d=el("circle",{r:4.5,fill:INST[c.inst],stroke:"var(--surface)","stroke-width":2,visibility:"hidden"});svg.appendChild(d);return d;});
+  let cur=null;
+  function at(w,ev){w=Math.max(1,Math.min(maxW,w));cur=w;cross.setAttribute("x1",X(w));cross.setAttribute("x2",X(w));cross.setAttribute("visibility","visible");
+    const rows=[];sel.forEach((c,i)=>{const v=c.retention[w];if(v!=null){dots[i].setAttribute("cx",X(w));dots[i].setAttribute("cy",Y(v));dots[i].setAttribute("visibility","visible");rows.push({k:SHORT[c.id],v:fmt(v)+"%",sw:INST[c.inst],dash:!!DASH[c.id],n:v});}else{dots[i].setAttribute("visibility","hidden");rows.push({k:SHORT[c.id],v:"course ended",sw:INST[c.inst],dash:!!DASH[c.id],n:-1});}});
+    rows.sort((a,b)=>b.n-a.n);
+    showTip(tipRows("Week "+w,rows),ev,svg);
+    live("Week "+w+": "+rows.map(r=>r.k+" "+r.v).join(", "));}
+  const hit=el("rect",{x:m.l,y:m.t,width:iw,height:ih,fill:"transparent"});svg.appendChild(hit);
+  hit.addEventListener("mousemove",ev=>{const r=svg.getBoundingClientRect();const x=(ev.clientX-r.left)/r.width*W;at(Math.round(1+(x-m.l)/iw*(maxW-1)),ev);});
+  hit.addEventListener("mouseleave",()=>{cross.setAttribute("visibility","hidden");dots.forEach(d=>d.setAttribute("visibility","hidden"));hideTip();});
+  svg.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){e.preventDefault();at((cur||0)+1,{type:"focus"});}else if(e.key==="ArrowLeft"){e.preventDefault();at((cur||2)-1,{type:"focus"});}else if(e.key==="Escape"){hideTip();}});
+  svg.addEventListener("blur",()=>{cross.setAttribute("visibility","hidden");dots.forEach(d=>d.setAttribute("visibility","hidden"));hideTip();});
+  area.appendChild(svg);
+ },
+ note:"Week 0 is excluded because everyone is active by definition. Drops in the last weeks mostly show courses ending for early starters, not drop-out.",
+ panel(){
+  const sel=C.filter(c=>state.sel.retention.has(c.id)).map(c=>({c,v:c.retention[3]})).filter(x=>x.v!=null).sort((a,b)=>a.v-b.v);
+  const dyn=sel.length?"In your selection, week-3 activity ranges from <b>"+fmt(sel[0].v)+"%</b> ("+SHORT[sel[0].c.id]+") to <b>"+fmt(sel[sel.length-1].v)+"%</b> ("+SHORT[sel[sel.length-1].c.id]+").":"";
+  return {dyn,rec:2,finding:"Courses diverge sharply by week 3. Human Factors (UEF) keeps 79–92% of learners active until the final weeks. BMU Computer organization falls from 62% in week 1 to 26% by week 3 and sits at 19–43% through week 9, then returns to about 70% in weeks 10–12.",
+   decision:"Trigger a check-in or nudge in week 2 for any course whose week-3 activity is projected below about half of learners, and keep a lighter pulse through the middle weeks.",
+   metric:"Share of learners active in week 3 and week 6, per course.",
+   caveat:"“Active” means any logged event, so it measures presence, not progress. The late BMU rebound likely reflects exam preparation, which this data cannot confirm."};
+ }
+};
+
+/* TIMING */
+V.timing={
+ controls(box){
+  box.appendChild(lbl("Courses with enough assignment submissions"));
+  box.appendChild(chips({multi:true,label:"Courses",items:courseItems(c=>!!c.timing),get:()=>state.sel.timing,click:id=>{toggleMulti(state.sel.timing,id,1);render();}}));
+  box.appendChild(seg([["pct","% of submissions"],["n","Submissions"]],()=>state.unit,v=>{state.unit=v;render();},"Unit"));
+ },
+ rows(){const sel=C.filter(c=>c.timing&&state.sel.timing.has(c.id));const head=["Days before the deadline proxy"].concat(sel.flatMap(c=>[SHORT[c.id]+" (% of submissions)",SHORT[c.id]+" (submissions)"]));
+  const rows=[];for(let k=14;k>=0;k--){const r=[k===14?"14+":k];sel.forEach(c=>{r.push(c.timing.bins[k]);r.push(Math.round(c.timing.bins[k]/100*c.timing.n));});rows.push(r);}return {head,rows};},
+ draw(area){
+  const sel=C.filter(c=>c.timing&&state.sel.timing.has(c.id));
+  sel.forEach(c=>{
+    const t=c.timing,W=760,H=270,m={l:44,r:12,t:34,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+    const isN=state.unit==="n";const vals=t.bins.map(b=>isN?Math.round(b/100*t.n):b);const mx=Math.max(...vals);
+    const top=isN?Math.ceil(mx/40)*40:Math.ceil(mx/20)*20;const Y=v=>m.t+ih-v/top*ih;
+    const svg=el("svg",{class:"chart",viewBox:"0 0 "+W+" "+H,role:"img","aria-label":SHORT[c.id]+": "+fmt(t.last24)+"% of submissions in the last 24 hours, "+fmt(t.plus14)+"% two or more weeks early. See table view for every bin."});
+    svg.appendChild(el("text",{x:m.l,y:16,class:"t-ink","font-weight":700,"font-size":13},c.name+" · "+t.assignments+" assignments, "+t.n+" submissions"));
+    const ticks=4;for(let i=0;i<=ticks;i++){const v=top/ticks*i;svg.appendChild(el("line",{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),class:"axis"}));svg.appendChild(el("text",{x:m.l-8,y:Y(v)+4,"text-anchor":"end"},fmt(v,0)+(isN?"":"%")));}
+    const bw=iw/15;
+    for(let k=14;k>=0;k--){const i=14-k;const x=m.l+i*bw+3,w=bw-6,v=vals[k];const y=Y(v),hgt=m.t+ih-y;
+      const r=el("rect",{x,y,width:w,height:Math.max(hgt,0),fill:"var(--c1)",rx:3,tabindex:"0","aria-label":(k===14?"14 or more":k)+" days before: "+fmt(t.bins[k])+"% ("+Math.round(t.bins[k]/100*t.n)+" submissions)"});
+      const tx=ev=>showTip(tipRows((k===14?"14+ days":k===0?"Last 24 hours":k+" day"+(k>1?"s":"")+" before")+" · "+SHORT[c.id],[{k:"Share of submissions",v:fmt(t.bins[k])+"%"},{k:"Submissions",v:String(Math.round(t.bins[k]/100*t.n))}]),ev,r);
+      r.addEventListener("mousemove",tx);r.addEventListener("focus",tx);r.addEventListener("mouseleave",hideTip);r.addEventListener("blur",hideTip);svg.appendChild(r);
+      svg.appendChild(el("text",{x:x+w/2,y:H-m.b+16,"text-anchor":"middle"},k===14?"14+":k));
+      if(k<=1||k===14){svg.appendChild(el("text",{x:x+w/2,y:y-5,"text-anchor":"middle",class:"t-ink","font-weight":600},isN?vals[k]:fmt(t.bins[k])+"%"));}
+    }
+    svg.appendChild(el("text",{x:m.l+iw/2,y:H-6,"text-anchor":"middle"},"Days before the assignment's deadline proxy (right = deadline)"));
+    area.appendChild(svg);
+    area.appendChild(h("p",{class:"note",style:"margin:0 0 14px"},"<b>"+fmt(t.last24)+"%</b> in the last 24 h · <b>"+fmt(t.last48)+"%</b> in the last 48 h · <b>"+fmt(t.last7)+"%</b> in the last 7 days · <b>"+fmt(t.plus14)+"%</b> two or more weeks early"));
+  });
+  if(!sel.length)area.appendChild(h("p",{class:"note"},"Pick at least one course above."));
+ },
+ note:"Only two courses logged enough assignment submissions to analyse. The deadline is a proxy: the 90th-percentile submission time of each assignment.",
+ panel(){
+  const sel=C.filter(c=>c.timing&&state.sel.timing.has(c.id));
+  const dyn=sel.length?"Last-24-hour share in your selection: "+sel.map(c=>"<b>"+fmt(c.timing.last24)+"%</b> ("+SHORT[c.id]+")").join(", ")+".":"";
+  return {dyn,rec:3,finding:"Human Factors (UEF) shows a classic pile-up: 34% of submissions arrive in the final 24 hours and 78% in the final week. Advanced Data Management (UEF) shows the opposite: only 4% in the last day and 62% two or more weeks early, which points to open submission windows.",
+   decision:"Where more than about 30% of work lands in the last day, add an interim draft or checkpoint roughly a week before the deadline. Where windows are open-ended, check whether a schedule would help the learners who finish last.",
+   metric:"Share of submissions in the last 24 hours, per assignment.",
+   caveat:"The deadline is inferred, not recorded, and there are no grades by assignment, so this cannot show whether late submission lowers quality."};
+ }
+};
+
+/* COVERAGE */
+V.coverage={
+ controls(box){
+  box.appendChild(lbl("Courses"));
+  box.appendChild(chips({multi:true,label:"Courses to show",items:courseItems(),get:()=>state.sel.coverage,click:id=>{toggleMulti(state.sel.coverage,id,1);render();}}));
+  box.appendChild(seg([["pct","% of learners"],["n","Learners"]],()=>state.unit,v=>{state.unit=v;render();},"Unit"));
+ },
+ rows(){const sel=C.filter(c=>state.sel.coverage.has(c.id));const head=["Course","Learners"].concat(TYPES.map(t=>t+" (% of learners)"));
+  return {head,rows:sel.map(c=>[SHORT[c.id],c.learners].concat(c.coverage))};},
+ draw(area){
+  const sel=C.filter(c=>state.sel.coverage.has(c.id));const isN=state.unit==="n";
+  const W=760,m={l:150,t:44,r:10,b:10},cw=(W-m.l-m.r)/TYPES.length,rh=42,H=m.t+sel.length*rh+m.b;
+  const svg=el("svg",{class:"chart",viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Heatmap of content types touched by learners in each selected course. Hatched cells mean no events of that type were logged. See table view for all values."});hatchDefs(svg);
+  TYPES.forEach((t,i)=>svg.appendChild(el("text",{x:m.l+i*cw+cw/2,y:m.t-16,"text-anchor":"middle",class:"t-ink","font-weight":600},t)));
+  sel.forEach((c,r)=>{const y=m.t+r*rh;
+    const lab=el("text",{x:m.l-10,y:y+rh/2+4,"text-anchor":"end",class:"t-ink"},SHORT[c.id]);svg.appendChild(lab);
+    c.coverage.forEach((v,i)=>{const x=m.l+i*cw;const none=v===0;const t=v/100;
+      const rect=el("rect",{x:x+2,y:y+2,width:cw-4,height:rh-4,rx:6,fill:none?"url(#hatch)":ramp(t),stroke:none?"var(--ink3)":"none","stroke-width":none?1:0,tabindex:"0","aria-label":SHORT[c.id]+", "+TYPES[i]+": "+(none?"no events logged":fmt(v)+"% of learners")});
+      const tx=ev=>showTip(tipRows(SHORT[c.id]+" · "+TYPES[i],none?[{k:"Status",v:"No events logged"}]:[{k:"Learners touching it",v:fmt(v)+"%"},{k:"Learners",v:String(Math.round(v/100*c.learners))+" of "+c.learners}]),ev,rect);
+      rect.addEventListener("mousemove",tx);rect.addEventListener("focus",tx);rect.addEventListener("mouseleave",hideTip);rect.addEventListener("blur",hideTip);svg.appendChild(rect);
+      svg.appendChild(el("text",{x:x+cw/2,y:y+rh/2+4,"text-anchor":"middle","font-weight":600,"font-size":13,style:"pointer-events:none;fill:"+(none?"var(--ink)":textOn(t))},none?"not logged":(isN?String(Math.round(v/100*c.learners)):fmt(v)+"%")));
+    });});
+  area.appendChild(svg);
+  // legend
+  const lg=h("div",{class:"note",style:"display:flex;align-items:center;gap:8px;flex-wrap:wrap"});
+  const bar=h("span",{style:"display:inline-block;width:160px;height:10px;border-radius:5px;background:linear-gradient(90deg,"+[0,.2,.4,.6,.8,1].map(ramp).join(",")+")"});
+  lg.appendChild(document.createTextNode("Fewer learners "));lg.appendChild(bar);lg.appendChild(document.createTextNode(" More learners · hatched = nothing logged"));area.appendChild(lg);
+ },
+ note:"Differences partly reflect what each LMS logs, not only what learners did.",
+ panel(){
+  const sel=C.filter(c=>state.sel.coverage.has(c.id));let z=0;sel.forEach(c=>c.coverage.forEach(v=>{if(v===0)z++;}));
+  return {dyn:"In your selection, <b>"+z+"</b> of "+(sel.length*TYPES.length)+" course and content-type cells have no logged events.",rec:1,
+   finding:"Logging is uneven. BMU courses log only quizzes and assessments, Peer review appears only in the two UEF courses, SU Human Computer Interaction shows quizzes at 1%, and Web applications logs none. Where logging is rich (UEF Human Factors), 86–97% of learners touch every content type.",
+   decision:"Before comparing courses, define a minimum xAPI event profile (which verbs and object types every course must emit) and check it before launch.",
+   metric:"Share of courses emitting at least five of the six content types.",
+   caveat:"A zero can mean the course has no such activity as well as missing logging. Confirm with the course owner before treating it as a gap."};
+ }
+};
+
+/* HOURS */
+V.hours={
+ controls(box){
+  box.appendChild(lbl("Course"));
+  const items=[{id:"ALL",label:"All except BMU"}].concat(courseItems().map(i=>({id:i.id,label:i.label,course:i.course,disabled:i.course.inst==="BMU",title:i.course.inst==="BMU"?"BMU timestamps may be offset, so time-of-day is hidden":""})));
+  box.appendChild(chips({multi:false,label:"Course",items,get:()=>state.sel.hours,click:id=>{state.sel.hours=id;render();}}));
+ },
+ data(){return state.sel.hours==="ALL"?DATA.all:byId[state.sel.hours];},
+ rows(){const d=this.data();const head=["Weekday"].concat([...Array(24).keys()].map(x=>x+":00 (% of activity)"));return {head,rows:d.heat.map((r,i)=>[DOW[i]].concat(r))};},
+ draw(area){
+  const d=this.data();const W=760,m={l:44,t:10,r:10,b:34},cw=(W-m.l-m.r)/24,rh=30,H=m.t+7*rh+m.b;
+  let mx=0;d.heat.forEach(r=>r.forEach(v=>{if(v>mx)mx=v;}));
+  const svg=el("svg",{class:"chart",viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Heatmap of study activity by weekday and hour. Use table view for every value."});
+  DOW.forEach((n,i)=>svg.appendChild(el("text",{x:m.l-8,y:m.t+i*rh+rh/2+4,"text-anchor":"end"},n)));
+  for(let hh=0;hh<24;hh+=2)svg.appendChild(el("text",{x:m.l+hh*cw+cw/2,y:H-m.b+16,"text-anchor":"middle"},hh));
+  svg.appendChild(el("text",{x:m.l+12*cw,y:H-4,"text-anchor":"middle"},"Hour of day (local time)"));
+  d.heat.forEach((row,i)=>row.forEach((v,j)=>{const t=v/mx;const r=el("rect",{x:m.l+j*cw+1,y:m.t+i*rh+1,width:cw-2,height:rh-2,rx:3,fill:ramp(t)});
+    const tx=ev=>showTip(tipRows(DOW[i]+" "+j+":00–"+(j+1)+":00",[{k:"Share of all activity",v:v.toFixed(2)+"%"}]),ev,r);r.addEventListener("mousemove",tx);r.addEventListener("mouseleave",hideTip);svg.appendChild(r);}));
+  area.appendChild(svg);
+  const lg=h("div",{class:"note",style:"display:flex;align-items:center;gap:8px;flex-wrap:wrap"});
+  lg.appendChild(document.createTextNode("0% "));lg.appendChild(h("span",{style:"display:inline-block;width:160px;height:10px;border-radius:5px;background:linear-gradient(90deg,"+[0,.2,.4,.6,.8,1].map(ramp).join(",")+")"}));lg.appendChild(document.createTextNode(" "+mx.toFixed(1)+"% of the course's activity in one weekday-hour"));area.appendChild(lg);
+ },
+ note:"Time is converted to each university's local time zone. BMU is excluded because its timestamps may be offset.",
+ panel(){
+  const d=this.data();let best=[0,0,0];d.heat.forEach((r,i)=>r.forEach((v,j)=>{if(v>best[0])best=[v,i,j];}));
+  const dyn="Busiest slot here: <b>"+DOW[best[1]]+" "+best[2]+":00</b> ("+best[0].toFixed(1)+"% of activity). Weekends carry <b>"+fmt(d.weekend)+"%</b> of activity and <b>"+fmt(d.after18)+"%</b> falls after 18:00.";
+  return {dyn,rec:5,finding:"Across the six non-BMU courses, 22% of activity happens on weekends and 32% after 18:00. Activity peaks in the afternoon on weekdays, with a second weekend peak in the evening.",
+   decision:"Schedule live sessions, office hours and reminder messages in the windows when learners are already active, and make sure weekend and evening support exists for deadline weeks.",
+   metric:"Median response time to learner questions, and attendance at live sessions by time slot.",
+   caveat:"Logged activity includes passive viewing, and time zones are converted from institution defaults, so individual learners abroad are misplaced."};
+ }
+};
+
+/* SEGMENTS */
+V.segments={
+ controls(box){
+  box.appendChild(lbl("Course"));
+  const items=[{id:"ALL",label:"All courses"}].concat(courseItems(c=>c.segments.length>0).map(i=>i));
+  box.appendChild(chips({multi:false,label:"Course",items,get:()=>state.sel.segments,click:id=>{state.sel.segments=id;render();}}));
+  box.appendChild(seg([["pct","% of learners"],["n","Learners"]],()=>state.unit,v=>{state.unit=v;render();},"Unit"));
+ },
+ data(){return state.sel.segments==="ALL"?DATA.all.segments:byId[state.sel.segments].segments;},
+ rows(){const d=this.data();return {head:["Learner type","Learners","% of learners","Mean score","Learners with a score"],rows:d.map(s=>[s.name,s.n,s.share,s.mean==null?"":s.mean,s.nscore])};},
+ draw(area){
+  const d=this.data();const isN=state.unit==="n";
+  const barChart=(title,valFn,labFn,maxV,tipFn)=>{
+    const W=760,m={l:110,r:70,t:30,b:8},rh=40,H=m.t+d.length*rh+m.b,iw=W-m.l-m.r;
+    const svg=el("svg",{class:"chart",viewBox:"0 0 "+W+" "+H,role:"img","aria-label":title});
+    svg.appendChild(el("text",{x:0,y:16,class:"t-ink","font-weight":700,"font-size":13},title));
+    d.forEach((s,i)=>{const v=valFn(s);const y=m.t+i*rh;svg.appendChild(el("text",{x:m.l-10,y:y+rh/2+4,"text-anchor":"end",class:"t-ink"},s.name));
+      const w=v==null?0:Math.max(2,v/maxV*iw);const r=el("rect",{x:m.l,y:y+6,width:w,height:rh-12,rx:4,fill:SEGCOL[i],tabindex:"0","aria-label":tipFn(s).replace(/<[^>]+>/g," ")});
+      const tx=ev=>showTip(tipFn(s),ev,r);r.addEventListener("mousemove",tx);r.addEventListener("focus",tx);r.addEventListener("mouseleave",hideTip);r.addEventListener("blur",hideTip);svg.appendChild(r);
+      svg.appendChild(el("text",{x:m.l+w+8,y:y+rh/2+4,class:"t-ink","font-weight":600},labFn(s)));});
+    return svg;};
+  const mx1=isN?Math.max(...d.map(s=>s.n),1):100;
+  area.appendChild(barChart("Share of learners by pacing pattern",s=>isN?s.n:s.share,s=>isN?String(s.n):fmt(s.share)+"%",isN?mx1*1.0:100,s=>tipRows(s.name,[{k:"Learners",v:String(s.n)},{k:"Share of learners",v:fmt(s.share)+"%"}])));
+  area.appendChild(h("div",{style:"height:10px"}));
+  area.appendChild(barChart("Mean score by pacing pattern (scored learners)",s=>s.mean,s=>s.mean==null?"no scores shown":s.mean.toFixed(2)+"  (n="+s.nscore+")",1,s=>tipRows(s.name,[{k:"Mean scaled score",v:s.mean==null?"—":s.mean.toFixed(2)},{k:"Learners with a score",v:String(s.nscore)}])));
+  const small=d.filter(s=>s.mean!=null&&s.nscore<20);
+  if(small.length)area.appendChild(h("p",{class:"note"},"Handle with care: "+small.map(s=>s.name+" has only "+s.nscore+" scored learners").join("; ")+"."));
+ },
+ note:"Types come from transparent rules on activity patterns, not from a statistical model. Scores are scaled 0–1.",
+ panel(){
+  const d=this.data();const top=d.slice().sort((a,b)=>b.share-a.share)[0];
+  return {dyn:"Largest group here: <b>"+top.name+"</b> ("+fmt(top.share)+"% of learners).",rec:4,
+   finding:"Across all courses, 50% of learners study steadily and score highest (mean 0.92). Bursty learners (27%) average 0.81, On-and-off learners (16%) 0.80, and Early leavers (8%) 0.75. Course mix differs by type, so some of the gap reflects which courses people are in.",
+   decision:"Pilot an early-warning flag at weeks 3–4 for learners whose pacing is bursty or fading, with a simple outreach test (message versus no message) before scaling.",
+   metric:"Score and completion of flagged learners who were contacted versus those who were not.",
+   caveat:"This is an association, not a cause. Only 15 Early leavers have a score. Scores are hidden for UL Web applications (unreliable) and only 12 SU HCI learners have one."};
+ }
+};
+
+/* ---------- panel / render ---------- */
+function renderPanel(){
+  const p=V[state.view].panel();const r=RECS.find(x=>x.id===p.rec);
+  const a=$("#panel");a.innerHTML="";
+  if(p.dyn)a.appendChild(h("div",{class:"dyn"},p.dyn));
+  const sec=(tag,html,cls)=>{const s=h("div",{class:"sec"});s.appendChild(h("p",{class:"tag"},tag));s.appendChild(h("p",{class:cls||""},html));a.appendChild(s);};
+  sec("What the data shows",esc(p.finding));
+  sec("Decision it would support",esc(p.decision));
+  sec("Metric to watch",esc(p.metric),"metric");
+  sec("Caveat",esc(p.caveat));
+  const s=h("div",{class:"sec"});const b=h("button",{type:"button",class:"btn"},"See this on the Decision board (decision "+r.id+")");b.addEventListener("click",()=>{setTab("decision-board");const e=document.getElementById("rec-"+r.id);if(e){e.scrollIntoView({block:"center"});e.querySelector("h3").focus();}});s.appendChild(b);a.appendChild(s);
+}
+function csvOf(t){const q=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};return [t.head].concat(t.rows).map(r=>r.map(q).join(",")).join("\n");}
+function renderTable(){const t=V[state.view].rows();const a=$("#tableArea");a.innerHTML="";const tb=h("table",{class:"data"});
+  tb.appendChild(h("caption",{class:"sr"},VIEWS.find(v=>v.id===state.view).q+" — data table"));
+  const th=h("thead");const tr=h("tr");t.head.forEach(x=>tr.appendChild(h("th",{scope:"col"},esc(x))));th.appendChild(tr);tb.appendChild(th);
+  const bd=h("tbody");t.rows.forEach(r=>{const tr=h("tr");r.forEach((c,i)=>tr.appendChild(h(i===0?"th":"td",i===0?{scope:"row",style:"font-weight:500;text-align:left;background:transparent;position:static"}:{},esc(c==null?"":c))));bd.appendChild(tr);});tb.appendChild(bd);a.appendChild(tb);}
+function render(){
+  hideTip();
+  const v=VIEWS.find(x=>x.id===state.view);$("#qTitle").textContent=v.q;$("#qSub").textContent=v.s;
+  const ctl=$("#controls");ctl.innerHTML="";V[state.view].controls(ctl);
+  ctl.appendChild(seg([["chart","Chart"],["table","Table"]],()=>state.mode,m=>{state.mode=m;render();},"View as"));
+  const cp=h("button",{type:"button",class:"btn"},"Copy data (CSV)");cp.addEventListener("click",async()=>{const csv=csvOf(V[state.view].rows());let ok=false;try{await navigator.clipboard.writeText(csv);ok=true;}catch(e){}
+    if(ok){cp.textContent="Copied";setTimeout(()=>cp.textContent="Copy data (CSV)",1600);}else{state.mode="table";render();const ta=h("textarea",{style:"width:100%;height:140px;margin-top:8px","aria-label":"CSV data, select and copy"});ta.value=csv;$("#tableArea").appendChild(ta);ta.focus();ta.select();}});ctl.appendChild(cp);
+  const area=$("#chartArea");area.innerHTML="";
+  if(state.mode==="chart"){area.hidden=false;$("#tableArea").hidden=true;V[state.view].draw(area);}
+  else{area.hidden=true;$("#tableArea").hidden=false;renderTable();}
+  $("#viewNote").textContent=V[state.view].note;
+  renderPanel();
+}
+function renderObjectives(){const f=$("#objectives");VIEWS.forEach((v,i)=>{const d=h("div",{class:"obj"});const id="o-"+v.id;
+  const inp=h("input",{type:"radio",name:"obj",id,value:v.id});if(v.id===state.view)inp.checked=true;
+  inp.addEventListener("change",()=>{state.view=v.id;if(v.id!=="timing"&&v.id!=="coverage"&&v.id!=="segments")state.unit="pct";render();});
+  d.appendChild(inp);d.appendChild(h("label",{for:id},'<span class="n">'+(i+1)+"</span><b>"+esc(v.q)+"</b><small>"+esc(v.s)+"</small>"));f.appendChild(d);});}
+
+/* ---------- decision board ---------- */
+const RECS=[
+ {id:1,view:"coverage",title:"Standardise what every course logs",impact:3,effort:2,
+  evidence:"BMU logs only quizzes and assessments; peer review appears in two courses; SU HCI quizzes sit at 1%.",
+  decision:"Agree a minimum xAPI event profile and check it before a course launches.",metric:"Courses emitting 5 or more of 6 content types."},
+ {id:2,view:"retention",title:"Add a week-2 re-engagement check-in",impact:3,effort:1,
+  evidence:"BMU Computer organization drops from 62% to 26% active between weeks 1 and 3; Human Factors holds 79–92%.",
+  decision:"Nudge or check in with learners in week 2 where early decay is likely.",metric:"Active share in weeks 3 and 6."},
+ {id:3,view:"timing",title:"Break big deadlines into checkpoints",impact:2,effort:1,
+  evidence:"34% of Human Factors submissions arrive in the final 24 hours; Advanced Data Management shows 4%.",
+  decision:"Add a draft checkpoint about a week before deadlines that show a pile-up.",metric:"Share of submissions in the last 24 hours."},
+ {id:4,view:"segments",title:"Pilot an early-warning flag",impact:3,effort:3,
+  evidence:"Steady learners average 0.92; Bursty 0.81; On-and-off 0.80; Early leavers 0.75 (n=15).",
+  decision:"Flag bursty or fading learners at weeks 3–4 and test outreach against no outreach.",metric:"Score and completion, contacted versus not contacted."},
+ {id:5,view:"hours",title:"Match support to real study windows",impact:1,effort:1,
+  evidence:"22% of activity is on weekends and 32% after 18:00 (excluding BMU).",
+  decision:"Run live sessions, office hours and reminders when learners are already active.",metric:"Response time and live-session attendance by slot."}
+];
+const LV=["","Low","Medium","High"];
+let sortKey="priority";
+function pill(kind,n){const cls=kind==="impact"?(n===3?"hi":n===2?"md":"lo"):(n===1?"hi":n===2?"md":"lo");return '<span class="pill '+cls+'">'+(kind==="impact"?"Impact: ":"Effort: ")+LV[n]+"</span>";}
+function renderBoard(){
+  let list=RECS.slice();if(sortKey==="effort")list.sort((a,b)=>a.effort-b.effort||a.id-b.id);if(sortKey==="impact")list.sort((a,b)=>b.impact-a.impact||a.id-b.id);
+  const bd=$("#board");bd.innerHTML="";
+  list.forEach(r=>{const c=h("article",{class:"card rec",id:"rec-"+r.id});
+    c.innerHTML='<div class="head"><span class="num" aria-hidden="true">'+r.id+'</span><h3 tabindex="-1">'+esc(r.title)+'</h3></div><div>'+pill("impact",r.impact)+pill("effort",r.effort)+'</div><dl><dt>Evidence</dt><dd>'+esc(r.evidence)+'</dd><dt>Decision</dt><dd>'+esc(r.decision)+'</dd><dt>Metric to watch</dt><dd><b>'+esc(r.metric)+'</b></dd></dl>';
+    const b=h("button",{type:"button",class:"btn",style:"align-self:flex-start;margin-top:8px"},"Open the evidence");b.addEventListener("click",()=>{state.view=r.view;setTab("explore");const inp=document.getElementById("o-"+r.view);if(inp)inp.checked=true;render();window.scrollTo({top:0,behavior:"smooth"});});c.appendChild(b);bd.appendChild(c);});
+  // matrix
+  const m=$("#matrixArea");m.innerHTML="";
+  const cell=(imp,eff)=>{const d=h("div",{class:"cell"});d.appendChild(h("b",{},imp>=2&&eff===1?"Do first":imp>=2?"Plan and resource":eff===1?"Quick win":"Maybe later"));RECS.filter(r=>(imp>=2?r.impact>=2:r.impact<2)&&(eff===1?r.effort===1:r.effort>=2)).forEach(r=>{const b=h("button",{type:"button","aria-label":"Decision "+r.id+": "+r.title},String(r.id));b.addEventListener("click",()=>{const e=document.getElementById("rec-"+r.id);e.scrollIntoView({block:"center"});e.querySelector("h3").focus();});d.appendChild(b);});return d;};
+  const mx=h("div",{class:"matrix",role:"group","aria-label":"Impact and effort matrix of the five decisions"});
+  mx.appendChild(h("div"));mx.appendChild(h("div",{class:"ax"},"Low effort"));mx.appendChild(h("div",{class:"ax"},"Higher effort"));
+  mx.appendChild(h("div",{class:"ax"},"Higher impact"));mx.appendChild(cell(3,1));mx.appendChild(cell(3,2));
+  mx.appendChild(h("div",{class:"ax"},"Lower impact"));mx.appendChild(cell(1,1));mx.appendChild(cell(1,2));
+  mx.appendChild(h("div"));mx.appendChild(h("div",{class:"ax",style:"grid-column:2/4"},"Numbers match the decisions below"));
+  m.appendChild(mx);
+  document.querySelectorAll("#sortSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sort===sortKey?"true":"false"));
+}
+document.querySelectorAll("#sortSeg button").forEach(b=>b.addEventListener("click",()=>{sortKey=b.dataset.sort;renderBoard();}));
+
+/* ---------- tabs ---------- */
+const TABS=["explore","decision-board","about"];const PANELS={explore:"p-explore","decision-board":"p-decisions",about:"p-about"};
+function setTab(t){if(TABS.indexOf(t)<0)t="explore";TABS.forEach(x=>{const b=document.getElementById("tab-"+x);b.setAttribute("aria-selected",x===t?"true":"false");b.tabIndex=x===t?0:-1;document.getElementById(PANELS[x]).hidden=x!==t;});
+  try{if(location.hash!=="#"+t)history.replaceState(null,"","#"+t);}catch(e){}}
+document.querySelectorAll("nav.tabs button").forEach(b=>{b.addEventListener("click",()=>setTab(b.dataset.tab));b.addEventListener("keydown",e=>{const i=TABS.indexOf(b.dataset.tab);let n=null;if(e.key==="ArrowRight")n=TABS[(i+1)%3];if(e.key==="ArrowLeft")n=TABS[(i+2)%3];if(n){e.preventDefault();setTab(n);document.getElementById("tab-"+n).focus();}});});
+window.addEventListener("hashchange",()=>setTab(location.hash.slice(1)));
+
+/* ---------- theme ---------- */
+$("#themeBtn").addEventListener("click",()=>{const d=!dark();if(d)document.documentElement.setAttribute("data-theme","dark");else document.documentElement.removeAttribute("data-theme");$("#themeBtn").setAttribute("aria-pressed",d?"true":"false");$("#themeBtn").textContent=d?"Light mode":"Dark mode";render();});
+
+renderObjectives();renderBoard();render();setTab(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

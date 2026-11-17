@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ERP Enablement Kit – Sales Coordinator Go-Live</title>
+<style>
+:root{--blue:#1d4ed8;--blue-d:#1e3a8a;--blue-l:#eff6ff;--blue-m:#bfdbfe;--ink:#0f172a;--ink2:#475569;--line:#e2e8f0;--bg:#f8fafc;--ok:#15803d;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:32px 20px 70px}
+.wrap{max-width:1040px;margin:0 auto}
+.hero h1{margin:4px 0 8px;font-size:clamp(24px,4vw,34px);line-height:1.2}
+.hero p{margin:0;max-width:720px;color:#dbeafe}
+.tag{display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:3px 12px;font-size:13px}
+nav{max-width:1040px;margin:-44px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+nav button{border:1px solid var(--blue-m);background:#fff;color:var(--blue-d);border-radius:99px;padding:9px 16px;font:600 14px inherit;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+nav button[aria-selected=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+main{max-width:1040px;margin:18px auto 60px;padding:0 20px}
+section{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px}
+section.on{display:block}
+h2{margin:0 0 4px;font-size:22px;color:var(--blue-d)}
+h3{margin:22px 0 8px;font-size:16px;color:var(--blue-d)}
+.lead{color:var(--ink2);margin:0 0 18px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}
+.card b{color:var(--blue-d)}
+.note{background:var(--blue-l);border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;font-size:14px;color:var(--ink)}
+.warn{background:#fffbeb;border-left-color:#f59e0b}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--blue-l);color:var(--blue-d);font-weight:600}
+th button{all:unset;cursor:pointer;font-weight:600}
+.scroll{overflow-x:auto}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.chip{border:1px solid var(--blue-m);background:#fff;color:var(--blue-d);border-radius:99px;padding:6px 14px;font:600 13px inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.High{background:#dbeafe;color:#1e3a8a}.Medium{background:#e0f2fe;color:#075985}.Low{background:#f1f5f9;color:#475569}
+.tl{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 6px}
+.tl div{background:var(--blue-l);border-top:4px solid var(--blue);border-radius:8px;padding:10px;font-size:13px}
+.tl b{display:block;color:var(--blue-d)}
+@media(max-width:760px){.tl{grid-template-columns:1fr 1fr}}
+.qrg{border:2px solid var(--blue);border-radius:12px;padding:18px 22px;max-width:640px}
+.qrg h3{margin-top:0}
+.qrg ol{padding-left:22px}
+.qrg li{margin:6px 0}
+kbd,.k{background:var(--blue-l);border:1px solid var(--blue-m);border-radius:5px;padding:0 6px;font-size:13px}
+/* simulation */
+.simbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--blue-m);border-radius:99px;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--blue-d);padding:7px 14px;font:600 13px inherit;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--blue);color:#fff}
+.btn{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:8px 16px;font:600 14px inherit;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--blue-d);border:1px solid var(--blue-m)}
+.instr{background:var(--blue-l);border:1px solid var(--blue-m);border-radius:10px;padding:10px 14px;margin-bottom:10px;min-height:64px}
+.instr small{color:var(--ink2);display:block}
+.app{display:grid;grid-template-columns:150px 1fr;border:1px solid #94a3b8;border-radius:10px;overflow:hidden;min-height:340px;background:#fff}
+.side{background:#0f172a;color:#cbd5e1;padding:10px 0}
+.side div{padding:9px 16px;cursor:pointer;font-size:14px}
+.side div:hover{background:#1e293b}
+.side .brand{font-weight:700;color:#fff;cursor:default;border-bottom:1px solid #334155;margin-bottom:6px}
+.pane{padding:16px}
+.pane h4{margin:0 0 10px}
+.row{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
+.row label{width:120px;font-size:14px;color:var(--ink2)}
+.app select,.app input{padding:7px 9px;border:1px solid #94a3b8;border-radius:6px;font:14px inherit;min-width:180px}
+.fake{padding:7px 10px;border:1px solid #94a3b8;border-radius:6px;min-width:180px;cursor:pointer;background:#fff}
+.ab{border:1px solid #94a3b8;background:#f1f5f9;border-radius:6px;padding:7px 14px;font:14px inherit;cursor:pointer}
+.ab.p{background:#0f766e;color:#fff;border-color:#0f766e}
+.hl{outline:3px solid #f59e0b;outline-offset:2px;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{outline-color:#fde68a}}
+@media(prefers-reduced-motion:reduce){.hl{animation:none}}
+.hide{display:none!important}
+.res{margin-top:12px}
+.bar{height:22px;background:var(--blue);border-radius:0 6px 6px 0}
+.q{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+.q p{margin:0 0 6px;font-weight:600}
+.q label{display:block;padding:3px 0;font-size:15px}
+.fb{font-size:14px;margin-top:6px}
+.good{color:var(--ok)}.bad{color:var(--bad)}
+footer{text-align:center;color:var(--ink2);font-size:13px;margin-top:20px}
+</style>
+</head>
+<body>
+<!-- Back to home (portfolio) -->
+<a href="../../index.html" style="display:inline-block;align-self:flex-start;margin:12px 16px;padding:10px 14px;font:600 16px/1.2 system-ui,sans-serif;color:#1E3A8A;background:#FAFAF7;border:1px solid #DCE3EC;border-radius:4px;text-decoration:none">&larr; Back to home</a>
+<header class="hero"><div class="wrap">
+<span class="tag">Portfolio project · Enterprise systems training · Fictional scenario</span>
+<h1>Go-live enablement kit: Sales coordinators on a new ERP</h1>
+<p>A compact, working example of the package a training lead builds for a system rollout: who needs what, how it is sequenced, what people keep on their desk, how they practise, and how readiness is measured.</p>
+</div></header>
+
+<nav role="tablist" aria-label="Kit sections">
+<button role="tab" aria-selected="true" data-tab="brief">1 · Brief</button>
+<button role="tab" aria-selected="false" data-tab="analysis">2 · Task analysis</button>
+<button role="tab" aria-selected="false" data-tab="plan">3 · Training plan</button>
+<button role="tab" aria-selected="false" data-tab="guide">4 · Quick guide</button>
+<button role="tab" aria-selected="false" data-tab="sim">5 · Simulation</button>
+<button role="tab" aria-selected="false" data-tab="ready">6 · Readiness</button>
+<button role="tab" aria-selected="false" data-tab="how">7 · How it was built</button>
+</nav>
+
+<main>
+<section id="brief" class="on">
+<h2>Project brief</h2>
+<p class="lead">Marlow Distribution Co. (fictional, about 120 staff) is replacing spreadsheets and email with a single ERP. The first go-live covers order-to-cash.</p>
+<div class="grid">
+<div class="card"><b>Situation</b><br>Orders are taken by phone and email, retyped into three spreadsheets, and often shipped late or invoiced wrong.</div>
+<div class="card"><b>Audience</b><br>6 sales coordinators. Experienced with the products and customers, comfortable with Excel, no ERP experience. Busy mornings, quieter after 2 pm.</div>
+<div class="card"><b>Go-live</b><br>New orders enter the system on day one. Old spreadsheets go read-only. Support is on the floor for the first two weeks.</div>
+<div class="card"><b>My role</b><br>Training lead: analysis, plan, job aids, practice, readiness measurement.</div>
+</div>
+<h3>Performance objectives (ABCD)</h3>
+<div class="scroll"><table>
+<tr><th>Audience</th><th>Behaviour</th><th>Condition</th><th>Degree</th></tr>
+<tr><td>Sales coordinator</td><td>Enters a customer order and confirms it</td><td>From a phone or email request, in the live ERP, using the quick guide</td><td>Under 4 minutes, with no wrong customer, quantity or payment terms</td></tr>
+<tr><td>Sales coordinator</td><td>Finds and corrects an order that has not shipped</td><td>Given a customer query</td><td>Within 2 minutes, without creating a duplicate</td></tr>
+<tr><td>Sales coordinator</td><td>Chooses the correct support route for a problem</td><td>Given 5 typical issues</td><td>5 of 5 correct</td></tr>
+</table></div>
+<p class="note" style="margin-top:16px">All company details, people and numbers in this kit are invented for demonstration. The ERP shown in the simulation is a generic mock-up, not a real product.</p>
+</section>
+
+<section id="analysis">
+<h2>Task analysis and role matrix</h2>
+<p class="lead">What each role must do in the new system, ranked so training time goes where the risk is. Priority = frequency × criticality × difficulty (each scored 1–3). Click a column heading to sort.</p>
+<div class="chips" id="roleChips" role="group" aria-label="Filter by role"></div>
+<div class="scroll"><table id="jta"><thead><tr>
+<th><button data-k="task">Task</button></th><th><button data-k="role">Role</button></th><th><button data-k="f">Freq.</button></th><th><button data-k="c">Critical</button></th><th><button data-k="d">Difficulty</button></th><th><button data-k="score">Priority</button></th><th>Best way to teach</th>
+</tr></thead><tbody></tbody></table></div>
+<p class="note" style="margin-top:14px">Scores are my judgement for this fictional scenario. In a real project they come from interviews, observation of the current process and error data, and are validated with team leads.</p>
+</section>
+
+<section id="plan">
+<h2>Training plan tied to go-live</h2>
+<p class="lead">Practice happens close to go-live, support stays after it, and the sales coordinator track is built first because it carries the most revenue risk.</p>
+<div class="tl">
+<div><b>T-6 weeks</b>Analysis done, process agreed, trainers named</div>
+<div><b>T-3 weeks</b>Materials reviewed by team leads</div>
+<div><b>T-1 week</b>Hands-on session and practice in test system</div>
+<div><b>Go-live</b>Quick guides on desks, floor support</div>
+<div><b>T+4 weeks</b>Readiness data reviewed, refresher</div>
+</div>
+<h3>Role tracks</h3>
+<div class="scroll"><table>
+<tr><th>Track</th><th>People</th><th>Format</th><th>Length</th><th>Status in this kit</th></tr>
+<tr><td>Sales coordinator</td><td>6</td><td>90-min hands-on session, click-through practice, quick guide, 5-question check</td><td>2 h total</td><td>Built (tabs 4–6)</td></tr>
+<tr><td>Warehouse picker</td><td>14</td><td>30-min floor demo on handheld, pocket card</td><td>45 min</td><td>Planned</td></tr>
+<tr><td>Accounts clerk</td><td>4</td><td>60-min workshop on invoice matching, job aid</td><td>1.5 h</td><td>Planned</td></tr>
+<tr><td>Team leads</td><td>5</td><td>Train-the-trainer, floor-support script, escalation route</td><td>2 h</td><td>Planned</td></tr>
+</table></div>
+<h3>How success is measured</h3>
+<ul><li><b>Before go-live:</b> practice completion and readiness-check score (80% to be released to live entry).</li>
+<li><b>First 4 weeks:</b> order-entry errors per 100 orders, support tickets by cause, time to enter an order.</li>
+<li><b>Action:</b> a cause that appears in 3 or more tickets becomes a guide update or a micro-lesson.</li></ul>
+</section>
+
+<section id="guide">
+<h2>Quick reference guide</h2>
+<p class="lead">The one-page job aid that sits next to the keyboard. It follows the task, not the menu.</p>
+<div class="qrg">
+<h3>Enter a customer order</h3>
+<ol>
+<li>Go to <span class="k">Sales</span> → <span class="k">New order</span>.</li>
+<li>Pick the <b>customer</b> from the list. Do not type a new one. If it is missing, call the data desk.</li>
+<li>Click <span class="k">Add line</span>, choose the product, set <b>quantity</b>.</li>
+<li>Check <b>payment terms</b>. They come from the customer record: change nothing without approval.</li>
+<li>Click <span class="k">Confirm order</span>. The warehouse sees it only after this step.</li>
+</ol>
+<p class="note warn"><b>Common mistakes</b><br>• Saving as draft and walking away: the warehouse never sees the order.<br>• Retyping an existing customer: creates a duplicate and splits their history.</p>
+<p><b>Order wrong after confirming?</b> Open it from Sales → Orders, click Edit if status is <i>Confirmed</i>. If status is <i>Shipped</i>, raise a ticket with your team lead.</p>
+</div>
+</section>
+
+<section id="sim">
+<h2>Click-through simulation</h2>
+<p class="lead">Practise the order-entry task in a safe mock system. Guided mode shows where to click. Test mode gives no hints and counts mistakes.</p>
+<div class="simbar">
+<div class="seg" role="group" aria-label="Mode"><button id="mG" aria-pressed="true">Guided</button><button id="mT" aria-pressed="false">Test</button></div>
+<button class="btn ghost" id="restart">Restart</button>
+<span id="prog" style="font-size:14px;color:var(--ink2)"></span>
+</div>
+<div class="instr" id="instr" aria-live="polite"></div>
+<div class="app" id="app">
+<div class="side"><div class="brand">OrderDesk</div><div data-t="m-home">Home</div><div data-t="m-sales">Sales</div><div data-t="m-inv">Inventory</div><div data-t="m-acc">Accounting</div></div>
+<div class="pane" id="pane"></div>
+</div>
+<div class="res" id="simres" aria-live="polite"></div>
+</section>
+
+<section id="ready">
+<h2>Readiness check and reporting</h2>
+<p class="lead">Five scenario questions on decisions, not on menu names. Then the report a project sponsor would see.</p>
+<div id="quiz"></div>
+<button class="btn" id="qsub">Check my answers</button>
+<div id="qres" class="res" aria-live="polite"></div>
+<h3>Pilot readiness by role (simulated data)</h3>
+<div class="chips" role="group" aria-label="View"><button class="chip" id="vChart" aria-pressed="true">Chart</button><button class="chip" id="vTable" aria-pressed="false">Table</button></div>
+<div id="rep"></div>
+<p class="note" style="margin-top:14px">Simulated numbers to show the reporting format. Sales coordinators clear the 80% release threshold; the other two tracks would get a follow-up session before live entry.</p>
+</section>
+
+<section id="how">
+<h2>How it was built: AI-assisted workflow</h2>
+<p class="lead">AI drafted; I decided. Every AI step was reviewed against a checklist and logged.</p>
+<div class="scroll"><table>
+<tr><th>Step</th><th>AI used for</th><th>What I changed or rejected</th><th>Time: manual estimate → actual</th></tr>
+<tr><td>Task analysis</td><td>First list of tasks per role</td><td>[add: e.g. removed X, re-scored Y]</td><td>[add] → [add]</td></tr>
+<tr><td>Quick guide</td><td>Draft steps and common mistakes</td><td>[add]</td><td>[add] → [add]</td></tr>
+<tr><td>Simulation</td><td>Mock interface and step script</td><td>[add]</td><td>[add] → [add]</td></tr>
+<tr><td>Readiness questions</td><td>Draft scenarios and distractors</td><td>[add]</td><td>[add] → [add]</td></tr>
+</table></div>
+<h3>Review checklist used on every AI draft</h3>
+<ul><li>Steps match the process agreed with the business, not a generic one</li><li>No invented system behaviour, field names or numbers</li><li>One performance objective per piece of content</li><li>Reading level suits a busy coordinator, not a manual</li></ul>
+<p class="note">Manual-time figures are my own estimates, not measured baselines.</p>
+</section>
+</main>
+<footer>Fictional scenario for portfolio use · Built by Athul Nath P</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+/* tabs */
+function show(id){$$('section').forEach(s=>s.classList.toggle('on',s.id===id));$$('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===id));}
+$$('nav button').forEach(b=>b.onclick=()=>{show(b.dataset.tab);history.replaceState(null,'','#'+b.dataset.tab)});
+if(location.hash&&$(location.hash))show(location.hash.slice(1));
+
+/* JTA */
+const T=[
+['Enter a customer order','Sales coordinator',3,3,2,'Hands-on + simulation'],
+['Check payment terms and credit hold','Sales coordinator',3,3,2,'Quick guide + practice'],
+['Amend a confirmed order','Sales coordinator',2,3,2,'Simulation + quick guide'],
+['Handle a customer order query','Sales coordinator',3,2,1,'Quick guide'],
+['Raise a support ticket','Sales coordinator',1,1,1,'One-line instruction'],
+['Pick an order on the handheld','Warehouse picker',3,3,2,'Floor demo + pocket card'],
+['Report a stock difference','Warehouse picker',2,3,2,'Floor demo'],
+['Confirm a delivery','Warehouse picker',3,2,1,'Floor demo'],
+['Match supplier invoice to order','Accounts clerk',3,3,3,'Workshop + job aid'],
+['Post a customer payment','Accounts clerk',3,3,2,'Workshop'],
+['Run month-end ageing report','Accounts clerk',1,2,2,'Job aid']
+].map(a=>({task:a[0],role:a[1],f:a[2],c:a[3],d:a[4],how:a[5],score:a[2]*a[3]*a[4]}));
+const lvl=s=>s>=18?'High':s>=8?'Medium':'Low';
+let role='All',sortK='score',asc=false;
+const roles=['All',...new Set(T.map(t=>t.role))];
+$('#roleChips').innerHTML=roles.map(r=>`<button class="chip" aria-pressed="${r==='All'}" data-r="${r}">${r}</button>`).join('');
+$$('#roleChips .chip').forEach(c=>c.onclick=()=>{role=c.dataset.r;$$('#roleChips .chip').forEach(x=>x.setAttribute('aria-pressed',x===c));draw()});
+$$('#jta th button').forEach(b=>b.onclick=()=>{if(sortK===b.dataset.k)asc=!asc;else{sortK=b.dataset.k;asc=false}draw()});
+function draw(){
+ const rows=T.filter(t=>role==='All'||t.role===role).sort((a,b)=>{const x=a[sortK],y=b[sortK];return(x>y?1:x<y?-1:0)*(asc?1:-1)});
+ $('#jta tbody').innerHTML=rows.map(t=>`<tr><td>${t.task}</td><td>${t.role}</td><td>${t.f}</td><td>${t.c}</td><td>${t.d}</td><td><span class="pill ${lvl(t.score)}">${lvl(t.score)} (${t.score})</span></td><td>${t.how}</td></tr>`).join('');
+}
+draw();
+
+/* simulation */
+const STEPS=[
+{t:'m-sales',txt:'Open the Sales menu.',tip:'Orders live under Sales, not Inventory.'},
+{t:'b-new',txt:'Start a new order.',tip:'New order is at the top of the list.'},
+{t:'f-cust',ev:'change',ok:v=>v==='Harbor Café',txt:'Choose the customer: Harbor Café.',tip:'Always pick from the list. Never type a new customer.'},
+{t:'b-line',txt:'Add a product line.',tip:'Add line opens the product row.'},
+{t:'f-qty',ev:'change',ok:v=>v==='20',txt:'Set the quantity to 20, then press Tab.',tip:'The customer asked for 20 boxes.'},
+{t:'f-terms',txt:'Check that payment terms read Net 30 (click the field to confirm).',tip:'Terms come from the customer record. Do not change them.'},
+{t:'b-confirm',txt:'Confirm the order.',tip:'The warehouse sees the order only after Confirm. Draft is not enough.'}
+];
+let st=0,errs=0,guided=true,t0=0,cust='',qty='';
+const pane=$('#pane');
+function paneHTML(){
+ if(st>=STEPS.length)return `<h4>Order SO-1042 confirmed</h4><p>Harbor Café · 20 × Cold-chain box · Net 30</p><p>Status: <b>Confirmed</b> – sent to warehouse.</p>`;
+ if(st<1)return `<h4>Home</h4><p style="color:#64748b">Welcome to OrderDesk (mock-up).</p>`;
+ if(st<2)return `<h4>Sales orders</h4><button class="ab p" data-t="b-new">New order</button><table style="margin-top:12px"><tr><th>Order</th><th>Customer</th><th>Status</th></tr><tr><td>SO-1040</td><td>Green Grocer</td><td>Shipped</td></tr><tr><td>SO-1041</td><td>Bay Hotel</td><td>Confirmed</td></tr></table>`;
+ return `<h4>New order</h4>
+ <div class="row"><label>Customer</label><select data-t="f-cust" id="c"><option value="">Select…</option>${["Bay Hotel","Green Grocer","Harbor Café"].map(o=>`<option ${o===cust?"selected":""}>${o}</option>`).join("")}</select></div>
+ <div class="row"><label>Lines</label><button class="ab" data-t="b-line">Add line</button></div>
+ <div class="row ${st<4?'hide':''}"><label>Quantity</label><input data-t="f-qty" id="q" type="number" placeholder="Qty" value="${qty}"> <span style="font-size:14px">Cold-chain box</span></div>
+ <div class="row"><label>Payment terms</label><div class="fake" data-t="f-terms" role="button" tabindex="0">Net 30</div></div>
+ <div class="row"><button class="ab" data-t="b-draft">Save as draft</button><button class="ab" data-t="b-cancel">Cancel</button><button class="ab p" data-t="b-confirm">Confirm order</button></div>`;
+}
+function render(){
+ $$('.hl').forEach(x=>x.classList.remove('hl'));
+ pane.innerHTML=paneHTML();
+ $('#prog').textContent=st<STEPS.length?`Step ${st+1} of ${STEPS.length}`:'Complete';
+ const s=STEPS[st];
+ $('#instr').innerHTML=s?`<b>${s.txt}</b><small>${guided?'Hint: '+s.tip:'Test mode: no hints.'}</small>`:'<b>Task complete.</b>';
+ if(s&&guided){const el=$(`[data-t="${s.t}"]`);if(el)el.classList.add('hl')}
+ if(st>=STEPS.length){const secs=Math.round((Date.now()-t0)/1000);
+  $('#simres').innerHTML=`<div class="note"><b>Finished in ${secs}s with ${errs} wrong click${errs===1?'':'s'}.</b> ${errs===0?'Clean run – ready for the readiness check.':'Review the quick guide, then restart in Test mode.'}</div>`}
+ else $('#simres').innerHTML=errs&&!guided?`<span class="bad">Wrong clicks so far: ${errs}</span>`:'';
+}
+function attempt(id,val){
+ const s=STEPS[st];if(!s)return;
+ if(id===s.t&&(!s.ok||s.ok(val))){if(st===0)t0=Date.now();st++;render();return}
+ if(!s.ev&&id!==s.t||s.ev&&id!==s.t){errs++;render();if(guided)$('#simres').innerHTML='<span class="bad">Not that one. Follow the highlight.</span>';}
+ else if(s.ok&&!s.ok(val)){errs++;render();$('#simres').innerHTML=`<span class="bad">That value is not right for this request.${guided?' '+s.tip:''}</span>`}
+}
+$('#app').addEventListener('click',e=>{
+ const el=e.target.closest('[data-t]');if(!el)return;
+ if(el.tagName==='SELECT'||el.tagName==='INPUT')return;
+ attempt(el.dataset.t);
+});
+$('#app').addEventListener('change',e=>{const el=e.target.closest('[data-t]');if(e.target.id==='c')cust=e.target.value;if(e.target.id==='q')qty=e.target.value;if(el)attempt(el.dataset.t,e.target.value)});
+$('#app').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.t&&e.target.getAttribute('role')==='button')attempt(e.target.dataset.t)});
+function reset(){st=0;errs=0;cust='';qty='';t0=Date.now();render()}
+$('#restart').onclick=reset;
+$('#mG').onclick=()=>{guided=true;$('#mG').setAttribute('aria-pressed',true);$('#mT').setAttribute('aria-pressed',false);reset()};
+$('#mT').onclick=()=>{guided=false;$('#mT').setAttribute('aria-pressed',true);$('#mG').setAttribute('aria-pressed',false);reset()};
+reset();
+
+/* quiz */
+const Q=[
+['A customer phones to change quantity on an order that is already Shipped. What do you do?',['Edit the order yourself','Raise a ticket with your team lead','Create a new order for the difference'],1,'Shipped orders cannot be edited; the lead decides the correction.'],
+['You cannot find a customer in the list. What do you do?',['Type a new customer on the order','Use a similar customer','Call the data desk'],2,'New customers are created by the data desk to avoid duplicates.'],
+['You save an order as draft and take a call. What happens at the warehouse?',['Nothing: they cannot see it','It is picked automatically','It is picked tomorrow'],0,'Only confirmed orders reach the warehouse.'],
+['Payment terms show Net 45 but the customer says Net 30. What do you do?',['Change it to Net 30','Leave it and ask accounts to check the record','Confirm and tell the customer'],1,'Terms come from the customer record; changes need approval.'],
+['Which is the most useful measure of order-entry quality in week 2?',['Number of logins','Errors per 100 orders','Hours of training attended'],1,'Errors per 100 orders shows whether practice turned into performance.']
+];
+$('#quiz').innerHTML=Q.map((q,i)=>`<div class="q"><p>${i+1}. ${q[0]}</p>${q[1].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join('')}<div class="fb" id="fb${i}"></div></div>`).join('');
+$('#qsub').onclick=()=>{let sc=0,ans=0;
+ Q.forEach((q,i)=>{const v=document.querySelector(`input[name=q${i}]:checked`);const fb=$('#fb'+i);
+  if(!v){fb.innerHTML='';return}ans++;
+  if(+v.value===q[2]){sc++;fb.innerHTML=`<span class="good">Correct.</span> ${q[3]}`}else fb.innerHTML=`<span class="bad">Not quite.</span> ${q[3]}`});
+ $('#qres').innerHTML=ans<Q.length?'<span class="bad">Answer all five questions first.</span>':`<div class="note"><b>${sc} of 5 (${sc*20}%).</b> ${sc*20>=80?'Above the 80% release threshold.':'Below 80%: coaching session before live entry.'}</div>`;
+};
+
+/* report */
+const R=[['Sales coordinator',6,86],['Warehouse picker',14,74],['Accounts clerk',4,69]];
+let view='chart';
+function rep(){
+ const el=$('#rep');
+ if(view==='table'){el.innerHTML=`<div class="scroll"><table><tr><th>Track</th><th>People</th><th>Average score</th><th>Status</th></tr>${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}%</td><td>${r[2]>=80?'Release':'Follow-up needed'}</td></tr>`).join('')}</table></div>`;return}
+ const w=600,h=200,l=190,top=26;
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Readiness score by role against 80 percent threshold">
+ ${[0,20,40,60,80,100].map(v=>{const x=l+v*(w-l-20)/100;return `<line x1="${x}" x2="${x}" y1="${top}" y2="160" stroke="#e2e8f0"/><text x="${x}" y="178" text-anchor="middle" font-size="11" fill="#475569">${v}%</text>`}).join('')}
+ ${R.map((r,i)=>{const y=top+8+i*42,bw=r[2]*(w-l-20)/100;return `<text x="${l-8}" y="${y+17}" text-anchor="end" font-size="13" fill="#0f172a">${r[0]} (n=${r[1]})</text><rect x="${l}" y="${y}" width="${bw}" height="26" rx="4" fill="${r[2]>=80?'#1d4ed8':'#93c5fd'}"><title>${r[0]}: ${r[2]}% (n=${r[1]})</title></rect><text x="${l+bw-8}" y="${y+18}" text-anchor="end" font-size="12" font-weight="600" fill="${r[2]>=80?'#fff':'#0f172a'}">${r[2]}%</text>`}).join('')}
+ <line x1="${l+80*(w-l-20)/100}" x2="${l+80*(w-l-20)/100}" y1="${top}" y2="160" stroke="#b45309" stroke-width="2" stroke-dasharray="5 4"/><text x="${l+80*(w-l-20)/100}" text-anchor="middle" y="16" font-size="12" font-weight="600" fill="#b45309">80% release</text></svg>`;
+}
+$('#vChart').onclick=()=>{view='chart';$('#vChart').setAttribute('aria-pressed',true);$('#vTable').setAttribute('aria-pressed',false);rep()};
+$('#vTable').onclick=()=>{view='table';$('#vTable').setAttribute('aria-pressed',true);$('#vChart').setAttribute('aria-pressed',false);rep()};
+rep();
+</script>
+</body>
+</html>

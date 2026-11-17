@@ -1,0 +1,239 @@
+/* Motion system for Home.
+   Rules:
+   - Everything here is inside prefers-reduced-motion: no-preference.
+   - .js (inline <head> script) enables the CSS-only hero entrance.
+   - .reveal-ready (added by js/main.js) enables "hidden until revealed" states,
+     so if main.js never runs, nothing is ever hidden.
+   - Only opacity, translate, rotate and scale animate. Two decorative,
+     paint-only exceptions: the hand-drawn box stroke and the marker sweep.
+   - No will-change. */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* =======================================================
+     1. Hero entrance (on load)
+     ======================================================= */
+  .js .hero-kicker {
+    animation: fade-up 800ms var(--ease-out) 100ms both;
+  }
+
+  .js .hero-by {
+    animation: fade-up 700ms var(--ease-out) 350ms both;
+  }
+
+  /* Box "draws" in with a left-to-right wipe. (A stroke-dash draw doesn't
+     work reliably with vector-effect: non-scaling-stroke.) */
+  .js .hand-box {
+    animation: draw 1200ms var(--ease-out) 600ms both;
+  }
+
+  .js .hero-name {
+    animation: fade-scale 900ms var(--ease-out) 700ms both;
+  }
+
+  /* Fades in last, then bobs 3 times (6 half-cycles, ends at rest: WCAG 2.2.2) */
+  .js .scroll-cue {
+    animation:
+      fade-in 600ms var(--ease-out) 1800ms both,
+      bob 800ms ease-in-out 2400ms 6 alternate;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; translate: 0 var(--rise); }
+    to   { opacity: 1; translate: 0 0; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes fade-scale {
+    from { opacity: 0; scale: 0.98; }
+    to   { opacity: 1; scale: 1; }
+  }
+
+  @keyframes draw {
+    from { clip-path: inset(-8px 100% -8px -8px); }
+    to   { clip-path: inset(-8px -8px -8px -8px); }
+  }
+
+  @keyframes bob {
+    from { translate: 0 0; }
+    to   { translate: 0 6px; }
+  }
+
+  /* =======================================================
+     2. Reveal on scroll (IntersectionObserver in main.js)
+     ======================================================= */
+  .reveal-ready [data-reveal] {
+    opacity: 0;
+    translate: 0 var(--rise);
+    transition:
+      opacity var(--dur-reveal) var(--ease-out),
+      translate var(--dur-reveal) var(--ease-out);
+    transition-delay: var(--delay, 0ms);
+  }
+
+  .reveal-ready [data-reveal].is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* =======================================================
+     3. About moments
+     ======================================================= */
+
+  /* Polaroid settles from 6deg to its final 2deg tilt */
+  .reveal-ready .polaroid[data-reveal] {
+    transition:
+      opacity 900ms var(--ease-out),
+      translate 900ms var(--ease-out),
+      rotate 900ms var(--ease-out);
+    transition-delay: var(--delay, 0ms);
+  }
+
+  .reveal-ready .polaroid[data-reveal]:not(.is-in) {
+    rotate: 6deg;
+  }
+
+  /* Underline band sweeps left to right after the quote appears
+     (box-decoration-break: clone, so each wrapped line's band sweeps together) */
+  .reveal-ready .about-quote .marker {
+    background-size: 0% 100%;
+    transition: background-size 900ms var(--ease-out);
+    transition-delay: calc(var(--delay, 0ms) + 450ms);
+  }
+
+  .reveal-ready .about-quote.is-in .marker {
+    background-size: 100% 100%;
+  }
+
+  /* =======================================================
+     3a. Hero -> dock morph (scroll-linked; transform + opacity only)
+     js/main.js measures and sets on <html>:
+       --dock-range  scroll distance of the morph (ends before About reaches the strip)
+       --dock-tx/ty  translate that carries the h1's centre to the dock mark's centre
+                     (ty includes +range, so the h1 glides in a straight line on
+                     screen instead of being dragged up by the page)
+       --dock-s      end scale (h1 width -> dock mark width)
+     Timeline (p = 0..1):
+       h1      translate + scale linear 0 -> 1; opacity 1 until .45, 0 by .80
+       strip   opacity 0 at .30 -> 1 at .70
+       mark    opacity 0 at .45 -> 1 at .80, scale 1.12 -> 1 (it "lands")
+     Engine A: CSS scroll-driven animations (.dock-sda) where supported.
+     Engine B: rAF scroll fallback (.dock-js) sets --dock-p, --hero-o,
+               --strip-o, --mark-o; same maths.
+     ======================================================= */
+  .dock-ready .hero-title {
+    transform-origin: 50% 50%;
+  }
+
+  /* Engine B: JS fallback */
+  .dock-js .hero-title {
+    translate:
+      calc(var(--dock-p, 0) * var(--dock-tx, 0px))
+      calc(var(--dock-p, 0) * var(--dock-ty, 0px));
+    scale: calc(1 - (1 - var(--dock-s, 1)) * var(--dock-p, 0));
+    opacity: var(--hero-o, 1);
+  }
+
+  .dock-js .dock::before {
+    opacity: var(--strip-o, 0);
+  }
+
+  .dock-js .dock-mark {
+    opacity: var(--mark-o, 0);
+    scale: calc(1.12 - 0.12 * var(--mark-o, 0));
+  }
+
+  /* Engine A: scroll-driven (linear timing keeps the glide a straight line) */
+  @supports (animation-timeline: scroll()) {
+    .dock-sda .hero-title {
+      animation: hero-to-dock linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0px var(--dock-range, 1px);
+    }
+
+    .dock-sda .dock::before {
+      animation: strip-in linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0px var(--dock-range, 1px);
+    }
+
+    .dock-sda .dock-mark {
+      animation: mark-in linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0px var(--dock-range, 1px);
+    }
+
+    @keyframes hero-to-dock {
+      0%   { translate: 0 0; scale: 1; opacity: 1; }
+      45%  { opacity: 1; }
+      80%  { opacity: 0; }
+      100% { translate: var(--dock-tx) var(--dock-ty); scale: var(--dock-s); opacity: 0; }
+    }
+
+    @keyframes strip-in {
+      0%, 30% { opacity: 0; }
+      70%, 100% { opacity: 1; }
+    }
+
+    @keyframes mark-in {
+      0%, 45% { opacity: 0; scale: 1.12; }
+      80%, 100% { opacity: 1; scale: 1; }
+    }
+  }
+
+  /* =======================================================
+     3b. Work: panels 01-04 stack on scroll, just below the dock strip.
+     Gated by .stack-fits (js/main.js), a measured test that the tallest panel
+     + --sticky-top (dock + 16px) fits the viewport, so a stuck panel can never
+     hide its own link. (A fixed min-height media query used to do this and
+     silently switched stacking off on typical ~650px-tall laptop viewports.)
+     ======================================================= */
+  @media (min-width: 48rem) {
+    .stack-fits .panel-stack .panel {
+      position: sticky;
+      top: var(--sticky-top); /* --dock-h + 16px: just below the dock strip */
+    }
+
+    /* each later panel slides over the ones before (all stay below the dock, z 20) */
+    .stack-fits .panel-stack .panel:nth-child(1) { z-index: 1; }
+    .stack-fits .panel-stack .panel:nth-child(2) { z-index: 2; }
+    .stack-fits .panel-stack .panel:nth-child(3) { z-index: 3; }
+    .stack-fits .panel-stack .panel:nth-child(4) { z-index: 4; }
+  }
+
+  /* =======================================================
+     4. Parallax on decoration only (scroll-driven; static elsewhere)
+     ======================================================= */
+  /* (The hero box drift was removed: it would fight the hero -> dock morph.) */
+  @supports (animation-timeline: view()) {
+    .polaroid {
+      view-timeline-name: --polaroid;
+    }
+
+    .polaroid::before {
+      animation: tape-a linear both;
+      animation-timeline: --polaroid;
+      animation-range: entry 0% exit 100%;
+    }
+
+    .polaroid::after {
+      animation: tape-b linear both;
+      animation-timeline: --polaroid;
+      animation-range: entry 0% exit 100%;
+    }
+
+    @keyframes tape-a {
+      from { translate: 0 10px; }
+      to   { translate: 0 -10px; }
+    }
+
+    @keyframes tape-b {
+      from { translate: 0 -10px; }
+      to   { translate: 0 10px; }
+    }
+  }
+}

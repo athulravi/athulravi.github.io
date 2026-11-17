@@ -1,0 +1,98 @@
+/* Design tokens: shared by every page. Values come from brief.md. */
+:root {
+  /* Colour */
+  --paper: #FAFAF7;      /* page background */
+  --line: #DCE3EC;       /* faint blue-grey: borders now, notebook lines later */
+  --blue: #1D4ED8;       /* primary */
+  --navy: #1E3A8A;       /* primary, darker */
+  --yellow: #F5C542;     /* accent: use sparingly, never as text on paper */
+  --ink: #0F172A;        /* body text */
+  --on-dark: #FFFFFF;    /* text on blue or navy */
+  --on-yellow: var(--ink);
+  --marker: rgba(245, 197, 66, 0.55);   /* yellow at 55%: highlighter, tape */
+  --tape-blue: rgba(29, 78, 216, 0.25); /* blue at 25%: tape */
+
+  /* Type */
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Silkscreen", ui-monospace, "Courier New", monospace;
+  --font-hand: "Caveat", "Segoe Print", cursive; /* short decorative lines only */
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif; /* h2 headings, About lead */
+  --font-quote: "Cormorant Garamond", Georgia, "Times New Roman", serif; /* About pull quote: swap here */
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --fs-sm: 0.875rem;     /* non-essential labels only */
+  --fs-base: 1rem;       /* 16px minimum for body */
+  --fs-md: 1.25rem;
+  --fs-lg: 1.75rem;
+  --fs-xl: 2.5rem;
+  --lh-body: var(--rule); /* body text sits one line per notebook rule */
+  --lh-tight: 1.2;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+
+  /* Layout */
+  --gutter: 1rem;        /* 16px side gutter at 360px */
+  --radius: 4px;
+  --tap: 44px;           /* minimum tap target height */
+
+  /* Focus */
+  --focus-ring: 3px solid var(--blue);
+  --focus-offset: 3px;
+
+  /* Page background: lined paper sheet on a grid-paper desk */
+  --desk: #F1F4F8;       /* grid desk base (light blue-grey) */
+  --grid-line: #C9D4E3;  /* grid lines, one step darker than --line */
+  --grid-cell: 16px;
+  --frame: 10px;         /* width of grid border around the sheet */
+  --sheet-max: 1100px;   /* sheet width on large screens */
+
+  /* Notebook rhythm: every vertical size inside <main> is a multiple of --rule */
+  --rule: 2rem;          /* 32px at default font size; scales with zoom */
+  --rule-offset: 0px;    /* nudge lines up/down if text floats too far above them */
+
+  /* Motion (used only under prefers-reduced-motion: no-preference) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-reveal: 800ms;
+  --stagger: 80ms;
+  --rise: 24px;
+
+  /* Dock strip (Home) and the panels' sticky offset just below it */
+  --dock-h: 56px;
+  --sticky-top: calc(var(--dock-h) + 16px);
+
+  /* Left margin line */
+  --margin-line: rgba(29, 78, 216, 0.25); /* brand blue at 25% */
+  --margin-x: 8px;
+
+  /* Lined paper, shared by <main> and the Home masthead so lines continue
+     without a seam (both blocks are whole multiples of --rule tall). */
+  --paper-margin: linear-gradient(
+    to right,
+    transparent var(--margin-x),
+    var(--margin-line) var(--margin-x),
+    var(--margin-line) calc(var(--margin-x) + 1px),
+    transparent calc(var(--margin-x) + 1px)
+  );
+  --paper-lines: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--rule) - 1px),
+    var(--line) calc(var(--rule) - 1px),
+    var(--line) var(--rule)
+  );
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --grid-cell: 24px;
+    --frame: 32px;
+    --margin-x: 48px;
+    --dock-h: 72px;
+  }
+}

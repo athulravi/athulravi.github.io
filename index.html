@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Athul Nath P – Instructional designer</title>
+  <meta name="description" content="Athul Nath P, instructional designer in Calicut, Kerala. I design training people actually finish, and check that it works.">
+
+  <!-- Favicon: blue pixel "A" -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#1D4ED8">
+
+  <!-- Sharing preview (LinkedIn, WhatsApp, etc.). Absolute URLs are required here
+       (live site: https://athulravi.github.io/). All other paths on the site are relative. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Athul Nath P">
+  <meta property="og:title" content="Athul Nath P – Instructional designer">
+  <meta property="og:description" content="Athul Nath P, instructional designer in Calicut, Kerala. I design training people actually finish, and check that it works.">
+  <meta property="og:url" content="https://athulravi.github.io/">
+  <meta property="og:image" content="https://athulravi.github.io/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Instructional design by Athul Nath P">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Cormorant+Garamond:ital,wght@1,500&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;600&family=Silkscreen&display=swap">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <!-- Progressive enhancement: motion styles apply only when JS runs -->
+  <script>document.documentElement.classList.add('js');</script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <!-- Dock: slim top strip with a one-line copy of the hero mark at the right.
+       Purely visual (aria-hidden; the h1 below is the only heading). Shown only
+       once js/main.js adds .dock-ready; the hero morphs into it on scroll. -->
+  <div class="dock" aria-hidden="true">
+    <div class="dock-inner container">
+      <p class="dock-mark">
+        <span class="dock-kicker">Instructional design</span>
+        <span class="dock-by">by</span>
+        <span class="dock-name-box">
+          <span class="dock-name">ATHUL</span>
+          <svg class="hand-box" focusable="false" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path d="M6 9 C 90 4, 220 12, 394 6 C 397 40, 391 82, 395 113 C 262 118, 120 111, 5 115 C 2 80, 9 44, 6 9 Z"/>
+            <path d="M11 5 C 120 10, 282 2, 391 11 C 389 46, 398 86, 390 116 C 248 111, 108 119, 9 110 C 6 74, 3 38, 11 5"/>
+          </svg>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Masthead: the big hero title. It scrolls normally; on scroll it shrinks,
+       glides to the top-right and cross-fades into the dock mark (css/motion.css). -->
+  <header class="masthead">
+    <div class="masthead-inner container">
+      <h1 id="hero-title" class="hero-title">
+        <span class="hero-kicker">Instructional design</span>
+        <span class="hero-by tilt">by</span>
+        <span class="name-box">
+          <span class="hero-name" aria-hidden="true">ATHUL</span>
+          <span class="visually-hidden">Athul Nath P</span>
+          <svg class="hand-box" aria-hidden="true" focusable="false" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path d="M6 9 C 90 4, 220 12, 394 6 C 397 40, 391 82, 395 113 C 262 118, 120 111, 5 115 C 2 80, 9 44, 6 9 Z"/>
+            <path d="M11 5 C 120 10, 282 2, 391 11 C 389 46, 398 86, 390 116 C 248 111, 108 119, 9 110 C 6 74, 3 38, 11 5"/>
+          </svg>
+        </span>
+      </h1>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Lower part of the hero: spacing + scroll cue; scrolls away first -->
+    <section class="hero-lower" aria-hidden="true">
+      <p class="scroll-cue">scroll <span class="scroll-arrow">&darr;</span></p>
+    </section>
+
+    <!-- About ("The Human Behind the Work") with the photo in a polaroid frame -->
+    <section id="about" class="section container about" aria-labelledby="about-title">
+      <h2 id="about-title" data-reveal>The Human Behind the Work</h2>
+      <p class="about-lead" data-reveal>Hey! I'm an Instructional Designer, learning enthusiast, and someone who genuinely enjoys figuring out how people learn best.</p>
+
+      <figure class="polaroid tilt" data-reveal="settle">
+        <!-- Fixed-size frame (CSS) + intrinsic width/height: no layout shift -->
+        <img class="polaroid-photo" src="assets/photo.jpg" alt="Portrait of Athul Nath P" width="720" height="1280" loading="lazy" decoding="async">
+      </figure>
+
+      <p data-reveal>Over the last 7 years, I've worked across industries, turning complex ideas into engaging learning experiences. From e-learning and interactive modules to technical training, I enjoy exploring the intersection of learning, design, technology, and creativity.</p>
+      <p class="about-quote" data-reveal>I believe good learning design isn't just about delivering information; it's about <span class="marker">making people curious enough to want to learn more</span>.</p>
+    </section>
+
+    <!-- Work ("Ideas in Action"): four stacked folder-tab panels -->
+    <section id="work" class="section container work" aria-labelledby="work-title">
+      <h2 id="work-title" data-reveal>Ideas in Action</h2>
+
+      <!-- Projects 01-04: folder-tab panels (sticky stacking in css/motion.css) -->
+      <div class="panel-stack">
+        <article class="panel panel--navy" aria-labelledby="p01-title" data-reveal>
+          <p class="folder-tab">Project 01</p>
+          <div class="panel-body">
+            <div class="panel-text">
+              <p class="status"><span class="pill"><span class="visually-hidden">Status: </span>Complete</span></p>
+              <h3 id="p01-title">Engagement and pacing audit</h3>
+              <p class="panel-desc">Interactive dashboard on an open dataset of 829 learners across 8 courses.</p>
+              <p class="panel-cta"><a href="projects/engagement-audit/index.html">View project<span class="visually-hidden">: Engagement and pacing audit</span> <span aria-hidden="true">&rarr;</span></a></p>
+            </div>
+            <div class="shot-frame"><img class="shot" src="assets/thumbs/engagement-audit.jpg" alt="Screenshot of the Engagement and pacing audit dashboard" width="1200" height="675" loading="lazy" decoding="async"></div>
+          </div>
+        </article>
+
+        <article class="panel panel--blue" aria-labelledby="p02-title" data-reveal>
+          <p class="folder-tab">Project 02</p>
+          <div class="panel-body">
+            <div class="panel-text">
+              <p class="status"><span class="pill"><span class="visually-hidden">Status: </span>Demonstration</span></p>
+              <h3 id="p02-title">ERP go-live enablement kit</h3>
+              <p class="panel-desc">Fictional rollout to six sales coordinators: task analysis, plan, guide, simulation, readiness check.</p>
+              <p class="panel-cta"><a href="projects/erp-kit/index.html">View project<span class="visually-hidden">: ERP go-live enablement kit</span> <span aria-hidden="true">&rarr;</span></a></p>
+            </div>
+            <div class="shot-frame"><img class="shot" src="assets/thumbs/erp-kit.jpg" alt="Screenshot of the ERP go-live enablement kit" width="1200" height="675" loading="lazy" decoding="async"></div>
+          </div>
+        </article>
+
+        <article class="panel panel--yellow" aria-labelledby="p03-title" data-reveal>
+          <p class="folder-tab">Project 03</p>
+          <div class="panel-body">
+            <div class="panel-text">
+              <p class="status"><span class="pill"><span class="visually-hidden">Status: </span>Complete</span></p>
+              <h3 id="p03-title">Healthcare module in Rise 360</h3>
+              <p class="panel-desc">Accessible module built to WCAG standards with a brand-guideline palette.</p>
+              <p class="panel-cta"><a href="https://athulravi.github.io/Articulate-demo/">View project<span class="visually-hidden">: Healthcare module in Rise 360</span> <span aria-hidden="true">&rarr;</span></a></p>
+            </div>
+            <div class="shot-frame"><img class="shot shot--wide" src="assets/thumbs/healthcare-rise.jpg" alt="Screenshot of the Healthcare module in Rise 360" width="1200" height="520" loading="lazy" decoding="async"></div>
+          </div>
+        </article>
+
+        <article class="panel panel--ink" aria-labelledby="p04-title" data-reveal>
+          <p class="folder-tab">Project 04</p>
+          <div class="panel-body">
+            <div class="panel-text">
+              <p class="status"><span class="pill">Document</span> <span class="pill"><span class="visually-hidden">Status: </span>Demo</span></p>
+              <h3 id="p04-title">Healthcare visual storyboard</h3>
+              <p class="panel-desc">20-slide demo; full version on request.</p>
+              <p class="panel-cta"><a href="documents/healthcare-storyboard-demo.pdf">View document<span class="visually-hidden">: Healthcare visual storyboard (PDF)</span> <span aria-hidden="true">&rarr;</span></a></p>
+            </div>
+            <div class="shot-frame"><img class="shot" src="assets/thumbs/healthcare-storyboard.jpg" alt="Preview of the Healthcare visual storyboard" width="582" height="444" loading="lazy" decoding="async"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact" class="site-footer">
+    <div class="container">
+      <h2>Contact</h2>
+      <ul class="contact-list">
+        <li>Email: <a href="mailto:athulnair25@gmail.com">athulnair25@gmail.com</a></li>
+        <li>LinkedIn: <a href="https://www.linkedin.com/in/athul-nath-524932183/" target="_blank" rel="noopener noreferrer">linkedin.com/in/athul-nath-524932183<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      </ul>
+      <p class="footer-facts">Instructional designer &middot; Calicut, Kerala &middot; Open to roles</p>
+      <div class="footer-meta">
+        <p>Fictional scenarios are labelled as such.</p>
+        <p>&copy; 2026 Athul Nath P</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
